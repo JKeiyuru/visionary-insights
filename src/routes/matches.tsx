@@ -21,15 +21,17 @@ type Match = {
   home_team: string;
   away_team: string;
   kickoff_at: string;
-  predictions?: Array<{ home_win_prob: number; draw_prob: number; away_win_prob: number; predicted_outcome: string; confidence: number; reasoning: string | null }>;
+  predictions?: Array<{ home_win_prob: number; draw_prob: number; away_win_prob: number; predicted_outcome: string; confidence: number; reasoning: string | null; premium: boolean }>;
 };
 
 const sports = ["all", "soccer", "basketball", "formula1", "baseball", "tennis"];
 const sportEmoji: Record<string, string> = { soccer: "⚽", basketball: "🏀", formula1: "🏎️", baseball: "⚾", tennis: "🎾" };
 
 function MatchesPage() {
+  const { user } = useAuth();
   const [matches, setMatches] = useState<Match[]>([]);
   const [filter, setFilter] = useState("all");
+  const [plan, setPlan] = useState<string>("free");
 
   useEffect(() => {
     supabase
@@ -38,6 +40,13 @@ function MatchesPage() {
       .order("kickoff_at", { ascending: true })
       .then(({ data }) => setMatches((data as Match[]) ?? []));
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("subscription_plan").eq("id", user.id).maybeSingle()
+      .then(({ data }) => setPlan(data?.subscription_plan ?? "free"));
+  }, [user]);
+
 
   const filtered = filter === "all" ? matches : matches.filter((m) => m.sport === filter);
 
