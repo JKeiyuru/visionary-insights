@@ -77,7 +77,7 @@ function Landing() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="relative h-[420px] sm:h-[520px] rounded-3xl glass overflow-hidden"
           >
-            <SportsScene className="absolute inset-0" />
+            <ClientScene className="absolute inset-0" />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
           </motion.div>
         </div>
