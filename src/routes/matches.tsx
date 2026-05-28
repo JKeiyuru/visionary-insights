@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Calendar, TrendingUp, Brain } from "lucide-react";
+import { Calendar, TrendingUp, Brain, Lock } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
+import { TierGate, tierAllows } from "@/components/TierGate";
 
 export const Route = createFileRoute("/matches")({
   head: () => ({ meta: [{ title: "Matches — VisionPlay" }] }),
