@@ -14,7 +14,175 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      matches: {
+        Row: {
+          away_score: number | null
+          away_team: string
+          created_at: string
+          home_score: number | null
+          home_team: string
+          id: string
+          kickoff_at: string
+          league: string | null
+          sport: string
+          status: string
+        }
+        Insert: {
+          away_score?: number | null
+          away_team: string
+          created_at?: string
+          home_score?: number | null
+          home_team: string
+          id?: string
+          kickoff_at: string
+          league?: string | null
+          sport: string
+          status?: string
+        }
+        Update: {
+          away_score?: number | null
+          away_team?: string
+          created_at?: string
+          home_score?: number | null
+          home_team?: string
+          id?: string
+          kickoff_at?: string
+          league?: string | null
+          sport?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      predictions: {
+        Row: {
+          away_win_prob: number
+          confidence: number
+          created_at: string
+          draw_prob: number
+          home_win_prob: number
+          id: string
+          match_id: string
+          predicted_outcome: string
+          premium: boolean
+          reasoning: string | null
+        }
+        Insert: {
+          away_win_prob: number
+          confidence: number
+          created_at?: string
+          draw_prob: number
+          home_win_prob: number
+          id?: string
+          match_id: string
+          predicted_outcome: string
+          premium?: boolean
+          reasoning?: string | null
+        }
+        Update: {
+          away_win_prob?: number
+          confidence?: number
+          created_at?: string
+          draw_prob?: number
+          home_win_prob?: number
+          id?: string
+          match_id?: string
+          predicted_outcome?: string
+          premium?: boolean
+          reasoning?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "predictions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          accuracy: number
+          avatar_url: string | null
+          correct_count: number
+          created_at: string
+          display_name: string | null
+          forecasts_count: number
+          id: string
+          subscription_expires_at: string | null
+          subscription_plan: string
+          tier: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          accuracy?: number
+          avatar_url?: string | null
+          correct_count?: number
+          created_at?: string
+          display_name?: string | null
+          forecasts_count?: number
+          id: string
+          subscription_expires_at?: string | null
+          subscription_plan?: string
+          tier?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          accuracy?: number
+          avatar_url?: string | null
+          correct_count?: number
+          created_at?: string
+          display_name?: string | null
+          forecasts_count?: number
+          id?: string
+          subscription_expires_at?: string | null
+          subscription_plan?: string
+          tier?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      user_forecasts: {
+        Row: {
+          confidence: number | null
+          correct: boolean | null
+          created_at: string
+          id: string
+          match_id: string
+          predicted_outcome: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          correct?: boolean | null
+          created_at?: string
+          id?: string
+          match_id: string
+          predicted_outcome: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          correct?: boolean | null
+          created_at?: string
+          id?: string
+          match_id?: string
+          predicted_outcome?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_forecasts_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
