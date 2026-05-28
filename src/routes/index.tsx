@@ -1,10 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { ArrowRight, Brain, Activity, Trophy, Sparkles, Target, Crown, Award, Check, Zap, Shield, TrendingUp } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { SportsScene } from "@/components/SportsScene";
 import { Button } from "@/components/ui/button";
+
+const SportsScene = lazy(() => import("@/components/SportsScene").then((m) => ({ default: m.SportsScene })));
+
+function ClientScene({ className }: { className?: string }) {
+  const [m, setM] = useState(false);
+  useEffect(() => setM(true), []);
+  if (!m) return <div className={className} />;
+  return (
+    <Suspense fallback={<div className={className} />}>
+      <SportsScene className={className} />
+    </Suspense>
+  );
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
