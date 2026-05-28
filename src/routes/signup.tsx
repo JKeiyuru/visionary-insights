@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Eye, Mail, Lock, User as UserIcon } from "lucide-react";
+import { Eye, Mail, Lock, User as UserIcon, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ function SignupPage() {
   const { user } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,12 +30,16 @@ function SignupPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const cleaned = phone.replace(/\s/g, "");
+    if (!/^(?:\+?\d{7,15})$/.test(cleaned)) {
+      return toast.error("Enter a valid phone with country code, e.g. +254712345678");
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: name },
+        data: { full_name: name, phone: cleaned },
         emailRedirectTo: window.location.origin + "/dashboard",
       },
     });
@@ -51,7 +56,7 @@ function SignupPage() {
 
   return (
     <div className="min-h-screen grid place-items-center px-4 py-10">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md glass rounded-3xl p-8">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md glass-strong rounded-3xl p-8 glow-ring">
         <Link to="/" className="flex items-center gap-2 justify-center">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent grid place-items-center">
             <Eye className="h-5 w-5 text-white" />
@@ -65,6 +70,7 @@ function SignupPage() {
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24"><path fill="currentColor" d="M12 11v3.2h5.6c-.4 2.3-2.4 4-5.6 4-3.4 0-6.2-2.8-6.2-6.2S8.6 5.8 12 5.8c1.5 0 2.9.5 4 1.5l2.3-2.3C16.7 3.5 14.5 2.6 12 2.6 6.8 2.6 2.6 6.8 2.6 12s4.2 9.4 9.4 9.4c5.4 0 9-3.8 9-9.1 0-.6-.1-1.2-.2-1.7H12z"/></svg>
           Continue with Google
         </Button>
+        <p className="mt-2 text-[11px] text-center text-muted-foreground">We'll ask for your phone after Google sign-in.</p>
 
         <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
           <div className="flex-1 h-px bg-border" /> OR <div className="flex-1 h-px bg-border" />
@@ -83,6 +89,13 @@ function SignupPage() {
             <div className="relative mt-1">
               <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="pl-9" placeholder="you@example.com" />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="phone">Phone (for M-Pesa & alerts)</Label>
+            <div className="relative mt-1">
+              <Smartphone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input id="phone" type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className="pl-9" placeholder="+254 712 345 678" />
             </div>
           </div>
           <div>

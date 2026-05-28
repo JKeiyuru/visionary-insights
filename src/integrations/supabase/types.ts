@@ -53,6 +53,45 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount_kes: number
+          created_at: string
+          id: string
+          phone: string | null
+          plan: string
+          provider: string
+          reference: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_kes: number
+          created_at?: string
+          id?: string
+          phone?: string | null
+          plan: string
+          provider: string
+          reference?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_kes?: number
+          created_at?: string
+          id?: string
+          phone?: string | null
+          plan?: string
+          provider?: string
+          reference?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       predictions: {
         Row: {
           away_win_prob: number
@@ -105,10 +144,13 @@ export type Database = {
           accuracy: number
           avatar_url: string | null
           correct_count: number
+          country_code: string | null
           created_at: string
           display_name: string | null
           forecasts_count: number
           id: string
+          phone: string | null
+          phone_verified: boolean
           subscription_expires_at: string | null
           subscription_plan: string
           tier: string
@@ -119,10 +161,13 @@ export type Database = {
           accuracy?: number
           avatar_url?: string | null
           correct_count?: number
+          country_code?: string | null
           created_at?: string
           display_name?: string | null
           forecasts_count?: number
           id: string
+          phone?: string | null
+          phone_verified?: boolean
           subscription_expires_at?: string | null
           subscription_plan?: string
           tier?: string
@@ -133,10 +178,13 @@ export type Database = {
           accuracy?: number
           avatar_url?: string | null
           correct_count?: number
+          country_code?: string | null
           created_at?: string
           display_name?: string | null
           forecasts_count?: number
           id?: string
+          phone?: string | null
+          phone_verified?: boolean
           subscription_expires_at?: string | null
           subscription_plan?: string
           tier?: string

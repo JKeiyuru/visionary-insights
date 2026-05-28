@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Calendar, TrendingUp, Brain } from "lucide-react";
+import { Calendar, TrendingUp, Brain, Lock } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
+import { TierGate, tierAllows } from "@/components/TierGate";
 
 export const Route = createFileRoute("/matches")({
   head: () => ({ meta: [{ title: "Matches — VisionPlay" }] }),
@@ -19,15 +21,17 @@ type Match = {
   home_team: string;
   away_team: string;
   kickoff_at: string;
-  predictions?: Array<{ home_win_prob: number; draw_prob: number; away_win_prob: number; predicted_outcome: string; confidence: number; reasoning: string | null }>;
+  predictions?: Array<{ home_win_prob: number; draw_prob: number; away_win_prob: number; predicted_outcome: string; confidence: number; reasoning: string | null; premium: boolean }>;
 };
 
 const sports = ["all", "soccer", "basketball", "formula1", "baseball", "tennis"];
 const sportEmoji: Record<string, string> = { soccer: "⚽", basketball: "🏀", formula1: "🏎️", baseball: "⚾", tennis: "🎾" };
 
 function MatchesPage() {
+  const { user } = useAuth();
   const [matches, setMatches] = useState<Match[]>([]);
   const [filter, setFilter] = useState("all");
+  const [plan, setPlan] = useState<string>("free");
 
   useEffect(() => {
     supabase
@@ -36,6 +40,13 @@ function MatchesPage() {
       .order("kickoff_at", { ascending: true })
       .then(({ data }) => setMatches((data as Match[]) ?? []));
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("subscription_plan").eq("id", user.id).maybeSingle()
+      .then(({ data }) => setPlan(data?.subscription_plan ?? "free"));
+  }, [user]);
+
 
   const filtered = filter === "all" ? matches : matches.filter((m) => m.sport === filter);
 
@@ -88,34 +99,48 @@ function MatchesPage() {
                 </div>
 
                 {p ? (
-                  <div className="mt-5">
-                    <div className="flex h-2 overflow-hidden rounded-full bg-surface-2">
-                      <motion.div initial={{ width: 0 }} animate={{ width: `${p.home_win_prob}%` }} className="bg-accent" />
-                      <motion.div initial={{ width: 0 }} animate={{ width: `${p.draw_prob}%` }} className="bg-muted" />
-                      <motion.div initial={{ width: 0 }} animate={{ width: `${p.away_win_prob}%` }} className="bg-primary" />
+                  p.premium && !tierAllows(plan, "weekly") ? (
+                    <div className="mt-5">
+                      <TierGate current={plan} required="weekly" feature="Premium AI prediction">
+                        <div />
+                      </TierGate>
                     </div>
-                    <div className="mt-2 grid grid-cols-3 text-xs">
-                      <div className="text-accent">Home {p.home_win_prob}%</div>
-                      <div className="text-center text-muted-foreground">Draw {p.draw_prob}%</div>
-                      <div className="text-right text-primary">Away {p.away_win_prob}%</div>
-                    </div>
-                    <div className="mt-4 flex items-start gap-2 rounded-xl bg-surface-2/60 p-3">
-                      <Brain className="h-4 w-4 text-accent shrink-0 mt-0.5" />
-                      <div className="text-sm">
-                        <div className="font-semibold flex items-center gap-2">
-                          {p.predicted_outcome === "home" ? m.home_team : p.predicted_outcome === "away" ? m.away_team : "Draw"}
-                          <span className="text-xs text-muted-foreground font-normal">{p.confidence}% confidence</span>
+                  ) : (
+                    <div className="mt-5">
+                      {p.premium && (
+                        <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-accent/15 text-accent px-2 py-0.5 text-[10px] uppercase tracking-wider">
+                          <Lock className="h-2.5 w-2.5" /> Premium
                         </div>
-                        {p.reasoning && <p className="mt-1 text-muted-foreground text-xs">{p.reasoning}</p>}
+                      )}
+                      <div className="flex h-2 overflow-hidden rounded-full bg-surface-2">
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${p.home_win_prob}%` }} className="bg-accent" />
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${p.draw_prob}%` }} className="bg-muted" />
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${p.away_win_prob}%` }} className="bg-primary" />
+                      </div>
+                      <div className="mt-2 grid grid-cols-3 text-xs">
+                        <div className="text-accent">Home {p.home_win_prob}%</div>
+                        <div className="text-center text-muted-foreground">Draw {p.draw_prob}%</div>
+                        <div className="text-right text-primary">Away {p.away_win_prob}%</div>
+                      </div>
+                      <div className="mt-4 flex items-start gap-2 rounded-xl bg-surface-2/60 p-3">
+                        <Brain className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                        <div className="text-sm">
+                          <div className="font-semibold flex items-center gap-2">
+                            {p.predicted_outcome === "home" ? m.home_team : p.predicted_outcome === "away" ? m.away_team : "Draw"}
+                            <span className="text-xs text-muted-foreground font-normal">{p.confidence}% confidence</span>
+                          </div>
+                          {p.reasoning && <p className="mt-1 text-muted-foreground text-xs">{p.reasoning}</p>}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )
                 ) : (
                   <div className="mt-5 rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
                     <TrendingUp className="h-4 w-4 mx-auto mb-1" />
                     Prediction generating…
                   </div>
                 )}
+
 
                 <Button variant="outline" size="sm" className="mt-4 w-full">Make your forecast</Button>
               </motion.div>
