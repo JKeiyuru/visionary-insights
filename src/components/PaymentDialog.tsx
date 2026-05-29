@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Smartphone, CreditCard, Check, Loader2, Lock, Shield } from "lucide-react";
+import { Smartphone, CreditCard, Check, Loader2, Lock, Shield, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,14 @@ import { useAuth } from "@/hooks/use-auth";
 
 export type Plan = { name: string; price: string; amount: number; period: string };
 
+function normalize(p: string) {
+  const raw = p.replace(/\s|-/g, "");
+  if (/^0[17]\d{8}$/.test(raw)) return "+254" + raw.slice(1);
+  if (/^[17]\d{8}$/.test(raw)) return "+254" + raw;
+  if (/^\+?254[17]\d{8}$/.test(raw)) return raw.startsWith("+") ? raw : "+" + raw;
+  return null;
+}
+
 export function PaymentDialog({
   open,
   onOpenChange,
@@ -22,8 +30,26 @@ export function PaymentDialog({
   plan: Plan | null;
 }) {
   const { user } = useAuth();
+  const [defaultPhone, setDefaultPhone] = useState<string>("");
   const [phone, setPhone] = useState("");
+  const [editing, setEditing] = useState(false);
   const [status, setStatus] = useState<"idle" | "processing" | "success">("idle");
+
+  // Load default M-Pesa phone from the user's profile (set at signup or by PhoneOnboarding).
+  useEffect(() => {
+    if (!user || !open) return;
+    supabase
+      .from("profiles")
+      .select("phone")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        const p = data?.phone ?? "";
+        setDefaultPhone(p);
+        setPhone(p);
+        setEditing(!p); // if no profile phone, force edit
+      });
+  }, [user, open]);
 
   async function recordAttempt(provider: string, payPhone?: string) {
     if (!user || !plan) return;
@@ -39,16 +65,17 @@ export function PaymentDialog({
   }
 
   async function payMpesa() {
-    if (!/^(?:\+?254|0)7\d{8}$/.test(phone.replace(/\s/g, ""))) {
+    const norm = normalize(phone);
+    if (!norm) {
       toast.error("Enter a valid Safaricom number, e.g. 0712 345 678");
       return;
     }
     setStatus("processing");
-    await recordAttempt("mpesa", phone);
+    await recordAttempt("mpesa", norm);
     // Placeholder STK-push simulation (real Daraja integration added when keys arrive)
     setTimeout(() => {
       setStatus("success");
-      toast.success("STK push sent. Approve on your phone (demo).");
+      toast.success(`STK push sent to ${norm}. Approve on your phone (demo).`);
     }, 2200);
   }
 
@@ -99,14 +126,30 @@ export function PaymentDialog({
                 </TabsList>
 
                 <TabsContent value="mpesa" className="mt-4 space-y-3">
-                  <Label htmlFor="mpesa-phone">M-Pesa number</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="mpesa-phone">M-Pesa number</Label>
+                    {!editing && defaultPhone && (
+                      <button
+                        type="button"
+                        onClick={() => setEditing(true)}
+                        className="text-xs text-accent hover:underline flex items-center gap-1"
+                      >
+                        <Pencil className="h-3 w-3" /> Use a different number
+                      </button>
+                    )}
+                  </div>
                   <Input
                     id="mpesa-phone"
                     placeholder="0712 345 678"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    disabled={status === "processing"}
+                    disabled={status === "processing" || (!editing && !!defaultPhone)}
                   />
+                  {!editing && defaultPhone && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Using your account number. You can switch to a one-off number above.
+                    </p>
+                  )}
                   <Button
                     className="w-full bg-success text-success-foreground hover:bg-success/90"
                     onClick={payMpesa}
@@ -139,7 +182,7 @@ export function PaymentDialog({
                     </div>
                   </div>
                   <Button
-                    className="w-full bg-gradient-to-r from-primary to-accent text-white border-0"
+                    className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground border-0"
                     onClick={payCard}
                     disabled={status === "processing"}
                   >
