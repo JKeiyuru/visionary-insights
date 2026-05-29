@@ -10,7 +10,6 @@ export function LegalContent({ contentKey }: { contentKey: string }) {
   useEffect(() => {
     let active = true;
     async function load() {
-      // @ts-expect-error - site_content not yet in generated types
       const { data } = await supabase
         .from("site_content")
         .select("title,body,updated_at")

@@ -36,7 +36,6 @@ function PricingPage() {
 
   useEffect(() => {
     async function load() {
-      // @ts-expect-error - plans not yet in generated types
       const { data } = await supabase.from("plans").select("*").eq("active", true).order("sort_order");
       if (data) setPlans(data as DbPlan[]);
     }

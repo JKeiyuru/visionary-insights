@@ -45,7 +45,6 @@ function AdminPage() {
   // If no admin exists in the system, first signed-in visitor can claim it (one-time bootstrap).
   useEffect(() => {
     if (!user || isAdmin) return;
-    // @ts-expect-error user_roles not yet in generated types
     supabase.from("user_roles").select("user_id", { count: "exact", head: true }).eq("role", "admin").then(({ count }) => {
       setAdminExists((count ?? 0) > 0);
     });
@@ -54,7 +53,6 @@ function AdminPage() {
   async function claimAdmin() {
     if (!user) return;
     setBootstrapping(true);
-    // @ts-expect-error user_roles not yet in generated types
     const { error } = await supabase.from("user_roles").insert({ user_id: user.id, role: "admin" });
     setBootstrapping(false);
     if (error) return toast.error(error.message);
@@ -235,7 +233,6 @@ function PlansPanel() {
 
   useEffect(() => {
     async function load() {
-      // @ts-expect-error plans not yet in generated types
       const { data } = await supabase.from("plans").select("*").order("sort_order");
       if (data) setRows(data as PlanRow[]);
     }
@@ -248,7 +245,6 @@ function PlansPanel() {
   }, []);
 
   async function save(p: PlanRow) {
-    // @ts-expect-error plans not yet in generated types
     const { error } = await supabase.from("plans").update({
       name: p.name, price_label: p.price_label, amount_kes: p.amount_kes,
       period: p.period, features: p.features, featured: p.featured,
@@ -260,7 +256,6 @@ function PlansPanel() {
 
   async function remove(id: string) {
     if (!confirm("Delete this plan?")) return;
-    // @ts-expect-error plans not yet in generated types
     const { error } = await supabase.from("plans").delete().eq("id", id);
     if (error) toast.error(error.message);
   }
@@ -268,7 +263,6 @@ function PlansPanel() {
   async function add() {
     const slug = prompt("Plan slug (e.g. annual):");
     if (!slug) return;
-    // @ts-expect-error plans not yet in generated types
     const { error } = await supabase.from("plans").insert({
       slug, name: slug, price_label: "KES 0", amount_kes: 0,
       period: "/month", features: [], sort_order: rows.length + 1,
@@ -350,7 +344,6 @@ function ContentPanel() {
 
   useEffect(() => {
     async function load() {
-      // @ts-expect-error site_content not yet in generated types
       const { data } = await supabase.from("site_content").select("*").order("key");
       if (data) setRows(data as ContentRow[]);
     }
@@ -363,7 +356,6 @@ function ContentPanel() {
   }, []);
 
   async function save(r: ContentRow) {
-    // @ts-expect-error site_content not yet in generated types
     const { error } = await supabase.from("site_content").update({
       title: r.title, body: r.body, updated_at: new Date().toISOString(),
     }).eq("id", r.id);
@@ -374,7 +366,6 @@ function ContentPanel() {
   async function addDoc() {
     const key = prompt("New content key (e.g. faq, about):");
     if (!key) return;
-    // @ts-expect-error site_content not yet in generated types
     const { error } = await supabase.from("site_content").insert({ key, title: key, body: "" });
     if (error) toast.error(error.message);
   }

@@ -38,7 +38,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const uid = session?.user?.id;
     if (!uid) { setIsAdmin(false); return; }
-    // @ts-expect-error - user_roles not yet in generated types
     supabase.from("user_roles").select("role").eq("user_id", uid).then(({ data }) => {
       setIsAdmin(Array.isArray(data) && data.some((r: { role: string }) => r.role === "admin"));
     });
