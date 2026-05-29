@@ -92,6 +92,48 @@ export type Database = {
         }
         Relationships: []
       }
+      plans: {
+        Row: {
+          active: boolean
+          amount_kes: number
+          featured: boolean
+          features: Json
+          id: string
+          name: string
+          period: string
+          price_label: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          amount_kes?: number
+          featured?: boolean
+          features?: Json
+          id?: string
+          name: string
+          period: string
+          price_label: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          amount_kes?: number
+          featured?: boolean
+          features?: Json
+          id?: string
+          name?: string
+          period?: string
+          price_label?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       predictions: {
         Row: {
           away_win_prob: number
@@ -149,6 +191,7 @@ export type Database = {
           display_name: string | null
           forecasts_count: number
           id: string
+          is_banned: boolean
           phone: string | null
           phone_verified: boolean
           subscription_expires_at: string | null
@@ -166,6 +209,7 @@ export type Database = {
           display_name?: string | null
           forecasts_count?: number
           id: string
+          is_banned?: boolean
           phone?: string | null
           phone_verified?: boolean
           subscription_expires_at?: string | null
@@ -183,6 +227,7 @@ export type Database = {
           display_name?: string | null
           forecasts_count?: number
           id?: string
+          is_banned?: boolean
           phone?: string | null
           phone_verified?: boolean
           subscription_expires_at?: string | null
@@ -190,6 +235,33 @@ export type Database = {
           tier?: string
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      site_content: {
+        Row: {
+          body: string
+          id: string
+          key: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body: string
+          id?: string
+          key: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body?: string
+          id?: string
+          key?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -231,15 +303,42 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -366,6 +465,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const

@@ -1,37 +1,56 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Check, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Button } from "@/components/ui/button";
 import { PaymentDialog, type Plan } from "@/components/PaymentDialog";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({ meta: [{ title: "Pricing — VisionPlay" }] }),
   component: PricingPage,
 });
 
-type Tier = Plan & { features: string[]; featured?: boolean; cta?: string };
-
-const tiers: Tier[] = [
-  { name: "Free", price: "KES 0", amount: 0, period: "forever", features: ["5 picks / day", "Basic insights", "Community access"], cta: "Start free" },
-  { name: "Weekly", price: "KES 149", amount: 149, period: "/week", features: ["Unlimited picks", "Live momentum", "Email & SMS alerts"] },
-  { name: "Monthly", price: "KES 399", amount: 399, period: "/month", featured: true, features: ["Everything in Weekly", "Premium leagues", "Priority support", "Revenue share access"] },
-  { name: "Elite Season", price: "KES 2,999", amount: 2999, period: "/season", features: ["All sports unlocked", "1-on-1 analyst time", "Private discord", "Early features"] },
-];
+type DbPlan = {
+  id: string;
+  slug: string;
+  name: string;
+  price_label: string;
+  amount_kes: number;
+  period: string;
+  features: string[];
+  featured: boolean;
+  sort_order: number;
+  active: boolean;
+};
 
 function PricingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [plans, setPlans] = useState<DbPlan[]>([]);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [open, setOpen] = useState(false);
 
-  function handleChoose(t: Tier) {
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase.from("plans").select("*").eq("active", true).order("sort_order");
+      if (data) setPlans(data as DbPlan[]);
+    }
+    load();
+    const channel = supabase
+      .channel("plans-public")
+      .on("postgres_changes", { event: "*", schema: "public", table: "plans" }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  function handleChoose(t: DbPlan) {
     if (!user) return navigate({ to: "/signup" });
-    if (t.amount === 0) return navigate({ to: "/dashboard" });
-    setPlan(t);
+    if (Number(t.amount_kes) === 0) return navigate({ to: "/dashboard" });
+    setPlan({ name: t.name, price: t.price_label, amount: Number(t.amount_kes), period: t.period });
     setOpen(true);
   }
 
@@ -48,9 +67,9 @@ function PricingPage() {
         </motion.div>
 
         <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {tiers.map((p, i) => (
+          {plans.map((p, i) => (
             <motion.div
-              key={p.name}
+              key={p.id}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
@@ -58,17 +77,17 @@ function PricingPage() {
               className={`relative rounded-2xl p-6 ${p.featured ? "bg-gradient-to-b from-primary/15 to-accent/10 border-2 border-primary glow-ring" : "glass"}`}
             >
               {p.featured && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-accent px-3 py-1 text-xs font-semibold text-white">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-accent px-3 py-1 text-xs font-semibold text-primary-foreground">
                   Most popular
                 </div>
               )}
               <h3 className="font-display text-xl font-semibold">{p.name}</h3>
               <div className="mt-3 flex items-baseline gap-1">
-                <span className="font-display text-3xl font-bold">{p.price}</span>
+                <span className="font-display text-3xl font-bold">{p.price_label}</span>
                 <span className="text-sm text-muted-foreground">{p.period}</span>
               </div>
               <ul className="mt-5 space-y-2">
-                {p.features.map((f) => (
+                {(p.features ?? []).map((f) => (
                   <li key={f} className="flex gap-2 text-sm">
                     <Check className="h-4 w-4 text-accent shrink-0 mt-0.5" /> {f}
                   </li>
@@ -76,10 +95,10 @@ function PricingPage() {
               </ul>
               <Button
                 onClick={() => handleChoose(p)}
-                className={`w-full mt-6 ${p.featured ? "bg-gradient-to-r from-primary to-accent text-white border-0" : ""}`}
+                className={`w-full mt-6 ${p.featured ? "bg-gradient-to-r from-primary to-accent text-primary-foreground border-0" : ""}`}
                 variant={p.featured ? "default" : "outline"}
               >
-                {p.cta ?? `Choose ${p.name}`}
+                {Number(p.amount_kes) === 0 ? "Start free" : `Choose ${p.name}`}
               </Button>
             </motion.div>
           ))}

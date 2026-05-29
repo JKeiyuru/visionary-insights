@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Eye, Menu, X } from "lucide-react";
+import { Eye, Menu, X, Shield } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Marquee } from "./Marquee";
+import { ThemeToggle } from "./ThemeToggle";
 
 const navItems = [
   { to: "/matches", label: "Matches" },
@@ -13,7 +14,7 @@ const navItems = [
 ];
 
 export function SiteHeader() {
-  const { user, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const [open, setOpen] = useState(false);
 
   return (
@@ -44,7 +45,7 @@ export function SiteHeader() {
               transition={{ duration: 0.6 }}
               className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary via-accent to-secondary grid place-items-center shadow-lg glow-ring"
             >
-              <Eye className="h-5 w-5 text-white" />
+              <Eye className="h-5 w-5 text-primary-foreground" />
             </motion.div>
             <span className="font-display text-xl font-semibold tracking-tight">
               Vision<span className="text-gradient">Play</span>
@@ -62,29 +63,32 @@ export function SiteHeader() {
                 {n.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="px-3 py-2 text-sm font-medium text-accent hover:text-foreground flex items-center gap-1"
+              >
+                <Shield className="h-3.5 w-3.5" /> Admin
+              </Link>
+            )}
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
+            <ThemeToggle />
             {user ? (
               <>
                 <Link to="/dashboard">
-                  <Button variant="ghost" size="sm">
-                    Dashboard
-                  </Button>
+                  <Button variant="ghost" size="sm">Dashboard</Button>
                 </Link>
-                <Button size="sm" variant="outline" onClick={() => signOut()}>
-                  Sign out
-                </Button>
+                <Button size="sm" variant="outline" onClick={() => signOut()}>Sign out</Button>
               </>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="ghost" size="sm">
-                    Sign in
-                  </Button>
+                  <Button variant="ghost" size="sm">Sign in</Button>
                 </Link>
                 <Link to="/signup">
-                  <Button size="sm" className="bg-gradient-to-r from-primary to-accent text-white border-0">
+                  <Button size="sm" className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
                     Get started
                   </Button>
                 </Link>
@@ -92,9 +96,12 @@ export function SiteHeader() {
             )}
           </div>
 
-          <button className="md:hidden p-2" onClick={() => setOpen(!open)} aria-label="menu">
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          <div className="md:hidden flex items-center gap-1">
+            <ThemeToggle />
+            <button className="p-2" onClick={() => setOpen(!open)} aria-label="menu">
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
 
         {open && (
@@ -113,27 +120,26 @@ export function SiteHeader() {
                 {n.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link to="/admin" onClick={() => setOpen(false)} className="block py-2 text-sm text-accent">
+                Admin panel
+              </Link>
+            )}
             <div className="pt-2 flex gap-2">
               {user ? (
                 <>
                   <Link to="/dashboard" className="flex-1">
-                    <Button size="sm" variant="outline" className="w-full">
-                      Dashboard
-                    </Button>
+                    <Button size="sm" variant="outline" className="w-full">Dashboard</Button>
                   </Link>
-                  <Button size="sm" variant="ghost" onClick={() => signOut()}>
-                    Sign out
-                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => signOut()}>Sign out</Button>
                 </>
               ) : (
                 <>
                   <Link to="/login" className="flex-1">
-                    <Button size="sm" variant="outline" className="w-full">
-                      Sign in
-                    </Button>
+                    <Button size="sm" variant="outline" className="w-full">Sign in</Button>
                   </Link>
                   <Link to="/signup" className="flex-1">
-                    <Button size="sm" className="w-full bg-gradient-to-r from-primary to-accent text-white border-0">
+                    <Button size="sm" className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
                       Get started
                     </Button>
                   </Link>
