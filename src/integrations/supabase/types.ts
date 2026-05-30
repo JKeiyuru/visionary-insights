@@ -192,6 +192,7 @@ export type Database = {
           forecasts_count: number
           id: string
           is_banned: boolean
+          is_suspended: boolean
           phone: string | null
           phone_verified: boolean
           subscription_expires_at: string | null
@@ -210,6 +211,7 @@ export type Database = {
           forecasts_count?: number
           id: string
           is_banned?: boolean
+          is_suspended?: boolean
           phone?: string | null
           phone_verified?: boolean
           subscription_expires_at?: string | null
@@ -228,6 +230,7 @@ export type Database = {
           forecasts_count?: number
           id?: string
           is_banned?: boolean
+          is_suspended?: boolean
           phone?: string | null
           phone_verified?: boolean
           subscription_expires_at?: string | null
@@ -336,9 +339,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "super_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -466,7 +470,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "super_admin"],
     },
   },
 } as const

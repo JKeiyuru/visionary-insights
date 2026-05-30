@@ -8,6 +8,7 @@ import { Marquee } from "./Marquee";
 import { ThemeToggle } from "./ThemeToggle";
 
 const navItems = [
+  { to: "/sports", label: "Sports" },
   { to: "/matches", label: "Matches" },
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/pricing", label: "Pricing" },
