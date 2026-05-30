@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Shield, Users, DollarSign, FileText, Loader2, Trash2, Plus, Crown, Ban, CheckCircle2 } from "lucide-react";
+import { Shield, Users, DollarSign, FileText, Loader2, Trash2, Plus, Crown, Ban, CheckCircle2, UserCog, ShieldOff } from "lucide-react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -33,27 +33,27 @@ type ProfileRow = {
 };
 
 function AdminPage() {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const [bootstrapping, setBootstrapping] = useState(false);
-  const [adminExists, setAdminExists] = useState<boolean | null>(null);
+  const [superAdminExists, setSuperAdminExists] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
   }, [user, loading, navigate]);
 
-  // If no admin exists in the system, first signed-in visitor can claim it (one-time bootstrap).
+  // If no super admin exists yet, first signed-in visitor can claim it.
   useEffect(() => {
-    if (!user || isAdmin) return;
-    supabase.from("user_roles").select("user_id", { count: "exact", head: true }).eq("role", "admin").then(({ count }) => {
-      setAdminExists((count ?? 0) > 0);
+    if (!user || isSuperAdmin) return;
+    supabase.from("user_roles").select("user_id", { count: "exact", head: true }).eq("role", "super_admin").then(({ count }) => {
+      setSuperAdminExists((count ?? 0) > 0);
     });
-  }, [user, isAdmin]);
+  }, [user, isSuperAdmin]);
 
-  async function claimAdmin() {
+  async function claimSuperAdmin() {
     if (!user) return;
     setBootstrapping(true);
-    const { error } = await supabase.from("user_roles").insert({ user_id: user.id, role: "admin" });
+    const { error } = await supabase.from("user_roles").insert({ user_id: user.id, role: "super_admin" });
     setBootstrapping(false);
     if (error) return toast.error(error.message);
     toast.success("You are now the super admin. Reloading…");
@@ -73,17 +73,19 @@ function AdminPage() {
             <Shield className="h-7 w-7 text-primary-foreground" />
           </div>
           <h1 className="mt-5 font-display text-2xl font-semibold">Admin area</h1>
-          {adminExists === false ? (
+          {superAdminExists === false ? (
             <>
               <p className="mt-2 text-sm text-muted-foreground">
-                No super admin exists yet. Since this is your platform, claim the role to manage everything.
+                No super admin exists yet. Claim it to manage the platform. Promote others from the database, then they can sign in as admins here.
               </p>
-              <Button onClick={claimAdmin} disabled={bootstrapping} className="mt-5 bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
+              <Button onClick={claimSuperAdmin} disabled={bootstrapping} className="mt-5 bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
                 {bootstrapping ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Claiming…</> : <><Crown className="h-4 w-4 mr-2" />Claim super admin</>}
               </Button>
             </>
           ) : (
-            <p className="mt-2 text-sm text-muted-foreground">You don't have permission to view this page.</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              You don't have permission to view this page. Ask a super admin (or your database administrator) to promote your account.
+            </p>
           )}
         </main>
         <SiteFooter />
@@ -97,27 +99,192 @@ function AdminPage() {
       <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3">
           <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-accent grid place-items-center glow-ring">
-            <Shield className="h-5 w-5 text-primary-foreground" />
+            {isSuperAdmin ? <Crown className="h-5 w-5 text-primary-foreground" /> : <Shield className="h-5 w-5 text-primary-foreground" />}
           </div>
           <div>
-            <h1 className="font-display text-3xl font-semibold">Super admin</h1>
-            <p className="text-sm text-muted-foreground">Realtime control of accounts, pricing and legal content.</p>
+            <h1 className="font-display text-3xl font-semibold">
+              {isSuperAdmin ? "Super admin" : "Admin"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {isSuperAdmin ? "Full control of accounts, admins, pricing, content." : "Manage predictions, content and assigned users."}
+            </p>
           </div>
         </motion.div>
 
         <Tabs defaultValue="users" className="mt-8">
           <TabsList>
             <TabsTrigger value="users"><Users className="h-4 w-4 mr-2" />Users</TabsTrigger>
-            <TabsTrigger value="plans"><DollarSign className="h-4 w-4 mr-2" />Plans</TabsTrigger>
+            {isSuperAdmin && <TabsTrigger value="admins"><UserCog className="h-4 w-4 mr-2" />Admins</TabsTrigger>}
+            {isSuperAdmin && <TabsTrigger value="plans"><DollarSign className="h-4 w-4 mr-2" />Plans</TabsTrigger>}
             <TabsTrigger value="content"><FileText className="h-4 w-4 mr-2" />Legal content</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="mt-6"><UsersPanel /></TabsContent>
-          <TabsContent value="plans" className="mt-6"><PlansPanel /></TabsContent>
+          {isSuperAdmin && <TabsContent value="admins" className="mt-6"><AdminsPanel currentUserId={user.id} /></TabsContent>}
+          {isSuperAdmin && <TabsContent value="plans" className="mt-6"><PlansPanel /></TabsContent>}
           <TabsContent value="content" className="mt-6"><ContentPanel /></TabsContent>
         </Tabs>
       </main>
       <SiteFooter />
+    </div>
+  );
+}
+
+/* ----------------------------- Admins panel ----------------------------- */
+
+type RoleRow = { id: string; user_id: string; role: string };
+type AdminProfile = ProfileRow & { roles: string[] };
+
+function AdminsPanel({ currentUserId }: { currentUserId: string }) {
+  const [people, setPeople] = useState<AdminProfile[]>([]);
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function load() {
+    const { data: roles } = await supabase.from("user_roles").select("*");
+    if (!roles) return;
+    const uids = Array.from(new Set((roles as RoleRow[]).map(r => r.user_id)));
+    if (uids.length === 0) { setPeople([]); return; }
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("id,display_name,phone,tier,subscription_plan,is_banned")
+      .in("id", uids);
+    const map = new Map<string, string[]>();
+    (roles as RoleRow[]).forEach(r => {
+      const arr = map.get(r.user_id) ?? [];
+      arr.push(r.role);
+      map.set(r.user_id, arr);
+    });
+    setPeople(((profs as ProfileRow[]) ?? []).map(p => ({ ...p, roles: map.get(p.id) ?? [] })));
+  }
+
+  useEffect(() => {
+    load();
+    const ch = supabase.channel("admin-roles")
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, load)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
+
+  async function promoteByName() {
+    if (!email.trim()) return;
+    setBusy(true);
+    // Lookup by display_name (since auth.users is not directly queryable from client)
+    const { data: matches } = await supabase
+      .from("profiles")
+      .select("id,display_name")
+      .ilike("display_name", `%${email.trim()}%`)
+      .limit(2);
+    if (!matches || matches.length === 0) { setBusy(false); return toast.error("No matching profile. Ask the user to sign up first."); }
+    if (matches.length > 1) { setBusy(false); return toast.error("More than one match — refine the search."); }
+    const target = matches[0] as { id: string };
+    const { error } = await supabase.from("user_roles").insert({ user_id: target.id, role: "admin" });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    setEmail("");
+    toast.success("Promoted to admin");
+  }
+
+  async function setRole(userId: string, role: "admin" | "moderator" | "super_admin", give: boolean) {
+    if (userId === currentUserId && role === "super_admin" && !give) {
+      return toast.error("You can't remove your own super admin role.");
+    }
+    if (give) {
+      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
+      if (error) return toast.error(error.message);
+      toast.success(`Granted ${role}`);
+    } else {
+      const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
+      if (error) return toast.error(error.message);
+      toast.success(`Removed ${role}`);
+    }
+  }
+
+  async function toggleSuspend(p: AdminProfile) {
+    const { error } = await supabase.from("profiles").update({ is_banned: !p.is_banned }).eq("id", p.id);
+    if (error) return toast.error(error.message);
+    toast.success(p.is_banned ? "Account restored" : "Account suspended");
+    load();
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="glass rounded-2xl p-4">
+        <h3 className="font-display text-lg font-semibold">Promote a user to admin</h3>
+        <p className="text-xs text-muted-foreground mt-1">
+          The user must have signed up first. Search by display name, then promote. (Super admin promotion happens directly in the database for safety.)
+        </p>
+        <div className="mt-3 flex gap-2">
+          <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Display name search…" className="flex-1" />
+          <Button onClick={promoteByName} disabled={busy} className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4 mr-1" />Promote</>}
+          </Button>
+        </div>
+      </div>
+
+      <div className="glass rounded-2xl p-4">
+        <h3 className="font-display text-lg font-semibold">Privileged accounts</h3>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-xs uppercase text-muted-foreground">
+              <tr className="text-left">
+                <th className="py-2 pr-3">User</th>
+                <th className="py-2 pr-3">Roles</th>
+                <th className="py-2 pr-3">Status</th>
+                <th className="py-2 pr-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {people.map((p) => {
+                const isSuper = p.roles.includes("super_admin");
+                const isAdminRow = p.roles.includes("admin");
+                const isMod = p.roles.includes("moderator");
+                return (
+                  <tr key={p.id} className="border-t border-border/40">
+                    <td className="py-2 pr-3">
+                      <div className="font-medium flex items-center gap-1">
+                        {isSuper && <Crown className="h-3 w-3 text-accent" />}
+                        {p.display_name ?? "—"}
+                        {p.id === currentUserId && <span className="text-[10px] text-muted-foreground">(you)</span>}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{p.id.slice(0, 8)}…</div>
+                    </td>
+                    <td className="py-2 pr-3 text-xs">
+                      {p.roles.length === 0 ? <span className="text-muted-foreground">none</span> : p.roles.join(" · ")}
+                    </td>
+                    <td className="py-2 pr-3">
+                      {p.is_banned
+                        ? <span className="inline-flex items-center gap-1 text-xs text-destructive"><Ban className="h-3 w-3" />Suspended</span>
+                        : <span className="inline-flex items-center gap-1 text-xs text-success"><CheckCircle2 className="h-3 w-3" />Active</span>}
+                    </td>
+                    <td className="py-2 pr-3 text-right space-x-1">
+                      {!isAdminRow && !isSuper && (
+                        <Button size="sm" variant="outline" onClick={() => setRole(p.id, "admin", true)}>Make admin</Button>
+                      )}
+                      {isAdminRow && !isSuper && (
+                        <Button size="sm" variant="outline" onClick={() => setRole(p.id, "admin", false)}>
+                          <ShieldOff className="h-3 w-3 mr-1" />Demote
+                        </Button>
+                      )}
+                      {!isMod && !isSuper && (
+                        <Button size="sm" variant="ghost" onClick={() => setRole(p.id, "moderator", true)}>+ Mod</Button>
+                      )}
+                      {!isSuper && (
+                        <Button size="sm" variant={p.is_banned ? "outline" : "destructive"} onClick={() => toggleSuspend(p)}>
+                          {p.is_banned ? "Restore" : "Suspend"}
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {people.length === 0 && (
+                <tr><td colSpan={4} className="py-6 text-center text-muted-foreground text-sm">No admins or moderators yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
