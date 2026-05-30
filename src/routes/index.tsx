@@ -83,6 +83,50 @@ function Landing() {
         </div>
       </section>
 
+      {/* SPORTS UNIVERSE PORTAL */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-20">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <div className="text-xs uppercase tracking-widest text-muted-foreground">Sports universe</div>
+            <h2 className="mt-2 font-display text-4xl sm:text-5xl font-semibold">Step inside a sport.</h2>
+            <p className="mt-2 text-muted-foreground max-w-xl">Each sport is its own cinematic 3D scene. Scroll inside one and the data unfolds around you.</p>
+          </div>
+          <Link to="/sports" className="text-sm font-medium text-accent inline-flex items-center gap-1 hover:gap-2 transition-all">
+            See all sports <ArrowRight className="h-4 w-4" />
+          </Link>
+        </motion.div>
+
+        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { slug: "soccer", name: "Soccer", emoji: "⚽", p: "#22c55e", a: "#eab308" },
+            { slug: "formula1", name: "Formula 1", emoji: "🏎️", p: "#ef4444", a: "#f59e0b" },
+            { slug: "basketball", name: "Basketball", emoji: "🏀", p: "#f97316", a: "#a855f7" },
+            { slug: "tennis", name: "Tennis", emoji: "🎾", p: "#84cc16", a: "#06b6d4" },
+            { slug: "boxing", name: "Boxing", emoji: "🥊", p: "#dc2626", a: "#fbbf24" },
+            { slug: "cricket", name: "Cricket", emoji: "🏏", p: "#16a34a", a: "#f59e0b" },
+            { slug: "american-football", name: "Am. Football", emoji: "🏈", p: "#7c3aed", a: "#22c55e" },
+            { slug: "baseball", name: "Baseball", emoji: "⚾", p: "#0ea5e9", a: "#f43f5e" },
+          ].map((s, i) => (
+            <motion.div key={s.slug} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }} whileHover={{ y: -6 }}>
+              <Link to="/sports/$sport" params={{ sport: s.slug }} className="group relative block h-44 overflow-hidden rounded-2xl border border-border bg-card/60 p-5">
+                <div className="absolute inset-0 opacity-25 group-hover:opacity-60 transition-opacity"
+                     style={{ background: `radial-gradient(circle at 70% 20%, ${s.p}, transparent 60%), radial-gradient(circle at 20% 90%, ${s.a}, transparent 55%)` }} />
+                <div className="relative flex h-full flex-col justify-between">
+                  <div className="text-4xl">{s.emoji}</div>
+                  <div>
+                    <h3 className="font-display text-lg font-semibold">{s.name}</h3>
+                    <div className="text-xs inline-flex items-center gap-1 mt-1" style={{ color: s.a }}>
+                      Enter scene <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+
       {/* FEATURES */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
         <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} className="text-center max-w-2xl mx-auto">
