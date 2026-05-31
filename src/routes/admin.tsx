@@ -36,30 +36,10 @@ type ProfileRow = {
 function AdminPage() {
   const { user, loading, isAdmin, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
-  const [bootstrapping, setBootstrapping] = useState(false);
-  const [superAdminExists, setSuperAdminExists] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
   }, [user, loading, navigate]);
-
-  // If no super admin exists yet, first signed-in visitor can claim it.
-  useEffect(() => {
-    if (!user || isSuperAdmin) return;
-    supabase.from("user_roles").select("user_id", { count: "exact", head: true }).eq("role", "super_admin").then(({ count }) => {
-      setSuperAdminExists((count ?? 0) > 0);
-    });
-  }, [user, isSuperAdmin]);
-
-  async function claimSuperAdmin() {
-    if (!user) return;
-    setBootstrapping(true);
-    const { error } = await supabase.from("user_roles").insert({ user_id: user.id, role: "super_admin" });
-    setBootstrapping(false);
-    if (error) return toast.error(error.message);
-    toast.success("You are now the super admin. Reloading…");
-    setTimeout(() => window.location.reload(), 600);
-  }
 
   if (loading || !user) {
     return <div className="min-h-screen grid place-items-center text-muted-foreground">Loading…</div>;
@@ -74,25 +54,15 @@ function AdminPage() {
             <Shield className="h-7 w-7 text-primary-foreground" />
           </div>
           <h1 className="mt-5 font-display text-2xl font-semibold">Admin area</h1>
-          {superAdminExists === false ? (
-            <>
-              <p className="mt-2 text-sm text-muted-foreground">
-                No super admin exists yet. Claim it to manage the platform. Promote others from the database, then they can sign in as admins here.
-              </p>
-              <Button onClick={claimSuperAdmin} disabled={bootstrapping} className="mt-5 bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
-                {bootstrapping ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Claiming…</> : <><Crown className="h-4 w-4 mr-2" />Claim super admin</>}
-              </Button>
-            </>
-          ) : (
-            <p className="mt-2 text-sm text-muted-foreground">
-              You don't have permission to view this page. Ask a super admin (or your database administrator) to promote your account.
-            </p>
-          )}
+          <p className="mt-2 text-sm text-muted-foreground">
+            You don't have permission to view this page. Contact the platform owner if you believe this is a mistake.
+          </p>
         </main>
         <SiteFooter />
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen">
