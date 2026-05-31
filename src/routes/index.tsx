@@ -63,10 +63,15 @@ function Landing() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative h-[420px] sm:h-[520px] rounded-3xl glass overflow-hidden"
+            className="relative h-[460px] sm:h-[560px] rounded-3xl glass overflow-hidden"
           >
-            <ClientScene className="absolute inset-0" />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
+            <HeroShowcase className="absolute inset-0" sports={["soccer", "formula1", "basketball"]} />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+            <div className="pointer-events-none absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-success live-dot" />Live 3D preview</span>
+              <span>Drag-free · auto-orbit</span>
+            </div>
+
           </motion.div>
         </div>
       </section>
