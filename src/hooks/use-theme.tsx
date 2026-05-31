@@ -16,12 +16,13 @@ function applyTheme(t: Theme) {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   // SSR-safe default: dark
-  const [theme, setThemeState] = useState<Theme>("dark");
+  // SSR-safe default: light
+  const [theme, setThemeState] = useState<Theme>("light");
 
   useEffect(() => {
     const stored = (typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY)) as Theme | null;
-    const prefersLight = typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches;
-    const initial: Theme = stored ?? (prefersLight ? "light" : "dark");
+    // Default to LIGHT unless user explicitly stored "dark" previously.
+    const initial: Theme = stored === "dark" ? "dark" : "light";
     setThemeState(initial);
     applyTheme(initial);
   }, []);
