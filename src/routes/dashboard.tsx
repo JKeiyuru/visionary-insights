@@ -9,6 +9,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneOnboarding } from "@/components/PhoneOnboarding";
 import { TierGate } from "@/components/TierGate";
+import { HeroShowcase } from "@/components/HeroShowcase";
+
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — VisionPlay" }] }),
