@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { Environment, Stars, Sparkles, Float } from "@react-three/drei";
+import { Environment, Stars, Sparkles, Float, ContactShadows, MeshReflectorMaterial } from "@react-three/drei";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { motion } from "framer-motion";
 import { SportHeroObject, HeroBackdrop } from "./SportHeroObject";
 import type { SportConfig } from "./sportConfig";
+
 
 gsap.registerPlugin(ScrollTrigger);
 
