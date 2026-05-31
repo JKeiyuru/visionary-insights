@@ -57,20 +57,43 @@ export function ImmersiveSportScene({ sport }: { sport: SportConfig }) {
     <div ref={containerRef} className="relative" style={{ height: `${sport.chapters.length * 100}vh` }}>
       {/* Pinned 3D scene */}
       <div ref={sceneRef} className="sticky top-0 h-screen w-full overflow-hidden">
-        <Canvas camera={{ position: [0, 0, 6], fov: 50 }} dpr={[1, 2]}>
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[5, 5, 5]} intensity={1.2} />
-          <pointLight position={[-4, 2, -3]} intensity={1.2} color={sport.primary} />
-          <pointLight position={[4, -2, -2]} intensity={1} color={sport.accent} />
+        <Canvas shadows camera={{ position: [0, 0, 6], fov: 50 }} dpr={[1, 2]} gl={{ antialias: true, toneMappingExposure: 1.05 }}>
+          <ambientLight intensity={0.45} />
+          <directionalLight position={[5, 6, 5]} intensity={1.4} castShadow shadow-mapSize={[2048, 2048]}>
+            <orthographicCamera attach="shadow-camera" args={[-6, 6, 6, -6, 0.1, 30]} />
+          </directionalLight>
+          <pointLight position={[-4, 2, -3]} intensity={1.4} color={sport.primary} />
+          <pointLight position={[4, -1, -2]} intensity={1.1} color={sport.accent} />
           <Stars radius={50} depth={30} count={1500} factor={2.5} fade speed={1} />
           <Sparkles count={80} scale={10} size={2.5} speed={0.4} color={sport.accent} />
           <HeroBackdrop color={sport.primary} />
           <Float speed={1.2} rotationIntensity={0.3} floatIntensity={0.8}>
             <SportHeroObject slug={sport.slug} progress={progress} />
           </Float>
+
+          {/* Reflective studio floor for that polished product-launch feel */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.1, 0]} receiveShadow>
+            <planeGeometry args={[40, 40]} />
+            <MeshReflectorMaterial
+              blur={[300, 100]}
+              resolution={1024}
+              mixBlur={1}
+              mixStrength={40}
+              roughness={0.9}
+              depthScale={1.2}
+              minDepthThreshold={0.4}
+              maxDepthThreshold={1.4}
+              color="#0a0a12"
+              metalness={0.5}
+              mirror={0.5}
+            />
+          </mesh>
+          <ContactShadows position={[0, -2.05, 0]} opacity={0.6} scale={14} blur={2.4} far={6} />
+
           <CameraRig progress={progress} />
-          <Environment preset="city" />
+          <Environment preset="studio" />
         </Canvas>
+
 
         {/* Overlaid chapter HUD */}
         <div className="pointer-events-none absolute inset-0 flex">
