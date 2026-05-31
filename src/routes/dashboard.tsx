@@ -9,6 +9,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneOnboarding } from "@/components/PhoneOnboarding";
 import { TierGate } from "@/components/TierGate";
+import { HeroShowcase } from "@/components/HeroShowcase";
+
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — VisionPlay" }] }),
@@ -45,17 +47,25 @@ function DashboardPage() {
       <PhoneOnboarding />
       <SiteHeader />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="font-display text-3xl font-semibold">
-              Welcome back{profile?.display_name ? `, ${profile.display_name}` : ""} 👋
+        {/* Immersive 3D hero strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-3xl glass h-[260px] sm:h-[320px] mb-8"
+        >
+          <HeroShowcase className="absolute inset-0" sports={["soccer", "basketball", "tennis"]} compact />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background/85 via-background/30 to-transparent" />
+          <div className="relative h-full flex flex-col justify-end p-6 sm:p-8 max-w-xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 backdrop-blur px-3 py-1 text-[11px] w-max">
+              <span className="h-1.5 w-1.5 rounded-full bg-success live-dot" /> LIVE · {matches.length} fixtures tracked
+            </div>
+            <h1 className="mt-3 font-display text-3xl sm:text-4xl font-semibold">
+              Welcome back{profile?.display_name ? `, ${profile.display_name}` : ""}.
             </h1>
-            <p className="text-muted-foreground mt-1">Here's what's happening today.</p>
-          </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs">
-            <span className="h-2 w-2 rounded-full bg-success live-dot" /> LIVE · {matches.length} fixtures tracked
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Your AI sports intelligence is live and watching every angle.</p>
           </div>
         </motion.div>
+
 
         <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
