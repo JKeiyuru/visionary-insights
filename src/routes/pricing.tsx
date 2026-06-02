@@ -1,10 +1,21 @@
+/**
+ * /pricing — Redesigned Pricing Page
+ *
+ * PLACEHOLDERS:
+ * ─────────────────────────────────────────────────────────────────────
+ * [SPLINE-BG] A slowly rotating trophy or medal 3D object as the
+ *   hero background. Search spline.design for "trophy 3d" or "medal".
+ *   Replace the gradient div below with:
+ *     import Spline from "@splinetool/react-spline";
+ *     <Spline scene="https://prod.spline.design/YOUR-ID/scene.splinecode"
+ *       style={{ position:"absolute", inset:0, width:"100%", height:"100%" }} />
+ * ─────────────────────────────────────────────────────────────────────
+ */
+
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { Check, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
-import { SiteHeader } from "@/components/SiteHeader";
+import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
-import { Button } from "@/components/ui/button";
 import { PaymentDialog, type Plan } from "@/components/PaymentDialog";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,16 +26,9 @@ export const Route = createFileRoute("/pricing")({
 });
 
 type DbPlan = {
-  id: string;
-  slug: string;
-  name: string;
-  price_label: string;
-  amount_kes: number;
-  period: string;
-  features: string[];
-  featured: boolean;
-  sort_order: number;
-  active: boolean;
+  id: string; slug: string; name: string; price_label: string;
+  amount_kes: number; period: string; features: string[];
+  featured: boolean; sort_order: number; active: boolean;
 };
 
 function PricingPage() {
@@ -40,11 +44,10 @@ function PricingPage() {
       if (data) setPlans(data as DbPlan[]);
     }
     load();
-    const channel = supabase
-      .channel("plans-public")
-      .on("postgres_changes", { event: "*", schema: "public", table: "plans" }, () => load())
+    const ch = supabase.channel("plans-public")
+      .on("postgres_changes", { event: "*", schema: "public", table: "plans" }, load)
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   function handleChoose(t: DbPlan) {
@@ -55,61 +58,234 @@ function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs">
-            <Sparkles className="h-3.5 w-3.5 text-accent" /> Pay in KES via M-Pesa or card
-          </div>
-          <h1 className="mt-4 font-display text-5xl font-semibold">Pricing</h1>
-          <p className="mt-3 text-muted-foreground">Cancel anytime, no questions asked.</p>
-        </motion.div>
+    <div style={{ background: "#06060a", color: "#fff", minHeight: "100vh", fontFamily: '"Inter", sans-serif' }}>
+      <FloatingNav />
 
-        <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {plans.map((p, i) => (
-            <motion.div
-              key={p.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              whileHover={{ y: -6 }}
-              className={`relative rounded-2xl p-6 ${p.featured ? "bg-gradient-to-b from-primary/15 to-accent/10 border-2 border-primary glow-ring" : "glass"}`}
-            >
-              {p.featured && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-accent px-3 py-1 text-xs font-semibold text-primary-foreground">
-                  Most popular
-                </div>
-              )}
-              <h3 className="font-display text-xl font-semibold">{p.name}</h3>
-              <div className="mt-3 flex items-baseline gap-1">
-                <span className="font-display text-3xl font-bold">{p.price_label}</span>
-                <span className="text-sm text-muted-foreground">{p.period}</span>
-              </div>
-              <ul className="mt-5 space-y-2">
-                {(p.features ?? []).map((f) => (
-                  <li key={f} className="flex gap-2 text-sm">
-                    <Check className="h-4 w-4 text-accent shrink-0 mt-0.5" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                onClick={() => handleChoose(p)}
-                className={`w-full mt-6 ${p.featured ? "bg-gradient-to-r from-primary to-accent text-primary-foreground border-0" : ""}`}
-                variant={p.featured ? "default" : "outline"}
-              >
-                {Number(p.amount_kes) === 0 ? "Start free" : `Choose ${p.name}`}
-              </Button>
-            </motion.div>
+      {/* ── HERO ──────────────────────────────────────────────────────── */}
+      <div style={{ position: "relative", height: 360, overflow: "hidden" }}>
+        {/*
+          [SPLINE-BG] Replace this gradient with a Spline trophy scene.
+          Search "trophy 3d" or "award gold" on spline.design community.
+        */}
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 100% at 70% 50%, #1a0a2e 0%, #06060a 65%)" }} />
+
+        {/* Placeholder instruction */}
+        <div
+          style={{
+            position: "absolute",
+            top: 80,
+            right: 52,
+            background: "rgba(0,0,0,0.45)",
+            border: "0.5px solid rgba(167,139,250,0.25)",
+            borderRadius: 10,
+            padding: "10px 14px",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <div style={{ fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: "#a78bfa", marginBottom: 4 }}>3D placeholder</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", lineHeight: 1.5, maxWidth: 200 }}>
+            Add a Spline trophy scene here.
+            <br />Search "trophy" on spline.design
+          </div>
+        </div>
+
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 0%, rgba(6,6,10,0.9) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(6,6,10,0.85) 0%, transparent 60%)" }} />
+
+        <div style={{ position: "absolute", bottom: 48, left: 0, padding: "0 64px" }}>
+          <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 14 }}>
+            Pricing
+          </p>
+          <h1
+            style={{
+              fontFamily: '"Space Grotesk", sans-serif',
+              fontSize: "clamp(32px, 4.5vw, 60px)",
+              fontWeight: 300,
+              letterSpacing: "-0.035em",
+              lineHeight: 1.05,
+            }}
+          >
+            Start free.
+            <br />Scale when you're ready.
+          </h1>
+        </div>
+      </div>
+
+      {/* ── PLANS ─────────────────────────────────────────────────────── */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "56px 64px 80px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1 }}>
+          {plans.map((p) => (
+            <PlanCard key={p.id} plan={p} onChoose={handleChoose} />
+          ))}
+
+          {/* Skeleton while loading */}
+          {plans.length === 0 && [1, 2, 3, 4].map((i) => (
+            <div key={i} style={{ height: 400, border: "0.5px solid rgba(255,255,255,0.06)", borderRadius: 12, background: "rgba(255,255,255,0.01)", animation: "pulse 1.5s infinite" }} />
           ))}
         </div>
 
-        <p className="mt-10 text-center text-xs text-muted-foreground max-w-xl mx-auto">
-          Payments processed securely. Subscription auto-renews unless cancelled. VisionPlay is an analytics platform, not a betting operator.
+        <p style={{ marginTop: 32, textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.2)", lineHeight: 1.65 }}>
+          Payments processed securely via M-Pesa or card.
+          Subscription auto-renews unless cancelled.
+          VisionPlay is an analytics platform, not a betting operator.
         </p>
-      </main>
+      </div>
+
+      {/* ── FAQ ───────────────────────────────────────────────────────── */}
+      <div
+        style={{
+          maxWidth: 680,
+          margin: "0 auto",
+          padding: "0 64px 100px",
+          borderTop: "0.5px solid rgba(255,255,255,0.06)",
+          paddingTop: 64,
+        }}
+      >
+        <h2 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: 28, fontWeight: 300, letterSpacing: "-0.025em", marginBottom: 40 }}>
+          Questions
+        </h2>
+        {[
+          { q: "Can I cancel anytime?", a: "Yes. Cancel from your dashboard before the next billing cycle and you won't be charged again." },
+          { q: "What payment methods are accepted?", a: "M-Pesa (Safaricom) and major debit/credit cards. More methods coming soon." },
+          { q: "Is VisionPlay a betting platform?", a: "No. VisionPlay is an analytics and entertainment platform. We provide predictions and insights — we do not accept wagers or operate as a bookmaker." },
+          { q: "How accurate are the predictions?", a: "Our average accuracy across all sports is 71.4%. Individual sports vary — soccer tends to be our strongest, F1 strategy the most complex." },
+          { q: "What is the Elite Season plan?", a: "A season-length pass covering all sports, premium leagues, 1-on-1 analyst sessions, and access to our private analyst community." },
+        ].map((f, i) => (
+          <FaqItem key={i} q={f.q} a={f.a} />
+        ))}
+      </div>
+
       <PaymentDialog open={open} onOpenChange={setOpen} plan={plan} />
       <SiteFooter />
+
+      <style>{`@keyframes pulse { 0%,100%{opacity:0.4;} 50%{opacity:0.7;} }`}</style>
+    </div>
+  );
+}
+
+function PlanCard({ plan: p, onChoose }: { plan: DbPlan; onChoose: (p: DbPlan) => void }) {
+  const [hovered, setHovered] = useState(false);
+  const accent = p.featured ? "#60a5fa" : "rgba(255,255,255,0.25)";
+
+  return (
+    <div
+      style={{
+        padding: "28px 24px 24px",
+        border: p.featured ? `0.5px solid rgba(96,165,250,0.25)` : "0.5px solid rgba(255,255,255,0.06)",
+        borderRadius: 12,
+        background: p.featured ? "rgba(96,165,250,0.04)" : hovered ? "rgba(255,255,255,0.015)" : "transparent",
+        transition: "background 0.2s ease",
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {p.featured && (
+        <div
+          style={{
+            position: "absolute",
+            top: -10,
+            left: 20,
+            background: "#60a5fa",
+            color: "#000",
+            fontSize: 10,
+            fontWeight: 600,
+            padding: "3px 10px",
+            borderRadius: 100,
+            letterSpacing: "0.06em",
+          }}
+        >
+          Most popular
+        </div>
+      )}
+
+      {/* Name */}
+      <div style={{ fontSize: 13, fontWeight: 500, color: accent, marginBottom: 16, letterSpacing: "-0.01em" }}>
+        {p.name}
+      </div>
+
+      {/* Price */}
+      <div style={{ marginBottom: 20 }}>
+        <span
+          style={{
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: 30,
+            fontWeight: 400,
+            letterSpacing: "-0.03em",
+          }}
+        >
+          {p.price_label}
+        </span>
+        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", marginLeft: 5 }}>
+          {p.period}
+        </span>
+      </div>
+
+      {/* Features */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 9, marginBottom: 24 }}>
+        {(p.features ?? []).map((f) => (
+          <div key={f} style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.45 }}>
+            <span style={{ color: accent, flexShrink: 0, marginTop: 1 }}>—</span>
+            {f}
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <button
+        onClick={() => onChoose(p)}
+        style={{
+          width: "100%",
+          padding: "11px 0",
+          borderRadius: 8,
+          border: "none",
+          cursor: "pointer",
+          fontSize: 13,
+          fontWeight: 500,
+          letterSpacing: "-0.01em",
+          background: p.featured ? "#60a5fa" : "rgba(255,255,255,0.07)",
+          color: p.featured ? "#000" : "rgba(255,255,255,0.6)",
+          transition: "opacity 0.2s",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
+        onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+      >
+        {Number(p.amount_kes) === 0 ? "Start free" : `Choose ${p.name}`}
+      </button>
+    </div>
+  );
+}
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ borderBottom: "0.5px solid rgba(255,255,255,0.06)" }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "18px 0",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          color: "#fff",
+          textAlign: "left",
+          gap: 16,
+        }}
+      >
+        <span style={{ fontSize: 15, fontWeight: 400, letterSpacing: "-0.01em" }}>{q}</span>
+        <span style={{ fontSize: 18, color: "rgba(255,255,255,0.3)", flexShrink: 0, transform: open ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>+</span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 0 18px", fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.65 }}>
+          {a}
+        </div>
+      )}
     </div>
   );
 }
