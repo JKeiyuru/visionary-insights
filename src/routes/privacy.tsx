@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SiteHeader } from "@/components/SiteHeader";
+import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { LegalContent } from "@/components/LegalContent";
 
@@ -10,11 +10,11 @@ export const Route = createFileRoute("/privacy")({
 
 function PrivacyPage() {
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <main className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
+    <div style={{ background: "#06060a", color: "#fff", minHeight: "100vh", fontFamily: '"Inter", sans-serif' }}>
+      <FloatingNav />
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "100px 64px 100px" }}>
         <LegalContent contentKey="privacy" />
-      </main>
+      </div>
       <SiteFooter />
     </div>
   );
