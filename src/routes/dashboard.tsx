@@ -1,26 +1,51 @@
+/**
+ * /dashboard — Redesigned User Dashboard
+ *
+ * PLACEHOLDERS:
+ * ─────────────────────────────────────────────────────────────────────
+ * [SPLINE-PERSONAL] A small 3D scene matching the user's top sport.
+ *   When you have your Spline scenes ready, swap the gradient hero
+ *   background with:
+ *     import Spline from "@splinetool/react-spline";
+ *     <Spline scene="https://prod.spline.design/YOUR-ID/scene.splinecode"
+ *       style={{ position:"absolute", inset:0, width:"100%", height:"100%" }} />
+ *
+ * [VIDEO-AMBIENT] Optional 6-8s looping stadium video behind the hero.
+ *   Source: pexels.com → "stadium night aerial"
+ *   Save to: /public/videos/dashboard-ambient.mp4
+ * ─────────────────────────────────────────────────────────────────────
+ */
+
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Trophy, Target, TrendingUp, Sparkles, Calendar, ArrowRight, Activity } from "lucide-react";
-import { SiteHeader } from "@/components/SiteHeader";
+import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
 import { PhoneOnboarding } from "@/components/PhoneOnboarding";
 import { TierGate } from "@/components/TierGate";
-import { HeroShowcase } from "@/components/HeroShowcase";
-
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — VisionPlay" }] }),
   component: DashboardPage,
 });
 
-type Match = { id: string; sport: string; league: string | null; home_team: string; away_team: string; kickoff_at: string };
-type Profile = { display_name: string | null; tier: string; accuracy: number; forecasts_count: number; correct_count: number; subscription_plan: string };
+type Match = {
+  id: string; sport: string; league: string | null;
+  home_team: string; away_team: string; kickoff_at: string;
+};
+type Profile = {
+  display_name: string | null; tier: string; accuracy: number;
+  forecasts_count: number; correct_count: number; subscription_plan: string;
+};
 
-const sportEmoji: Record<string, string> = { soccer: "⚽", basketball: "🏀", formula1: "🏎️", baseball: "⚾", tennis: "🎾" };
+const TIER_COLORS: Record<string, string> = {
+  bronze: "#b45309", silver: "#94a3b8", gold: "#eab308", oracle: "#a78bfa",
+};
+const SPORT_ACCENT: Record<string, string> = {
+  soccer: "#34d399", basketball: "#fb923c", formula1: "#f87171",
+  baseball: "#60a5fa", tennis: "#a3e635", cricket: "#fbbf24",
+};
 
 function DashboardPage() {
   const { user, loading } = useAuth();
@@ -34,127 +59,237 @@ function DashboardPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("matches").select("*").order("kickoff_at", { ascending: true }).limit(6).then(({ data }) => setMatches(data ?? []));
-    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle().then(({ data }) => setProfile(data as Profile | null));
+    supabase.from("matches").select("*").order("kickoff_at", { ascending: true }).limit(6)
+      .then(({ data }) => setMatches(data ?? []));
+    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle()
+      .then(({ data }) => setProfile(data as Profile | null));
   }, [user]);
 
-  if (loading || !user) return <div className="min-h-screen grid place-items-center text-muted-foreground">Loading…</div>;
+  if (loading || !user) {
+    return (
+      <div style={{ background: "#06060a", minHeight: "100vh", display: "grid", placeItems: "center", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>
+        Loading…
+      </div>
+    );
+  }
 
   const plan = profile?.subscription_plan ?? "free";
+  const tierColor = TIER_COLORS[profile?.tier ?? "bronze"] ?? "#b45309";
 
   return (
-    <div className="min-h-screen">
+    <div style={{ background: "#06060a", color: "#fff", minHeight: "100vh", fontFamily: '"Inter", sans-serif' }}>
       <PhoneOnboarding />
-      <SiteHeader />
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
-        {/* Immersive 3D hero strip */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-3xl glass h-[260px] sm:h-[320px] mb-8"
+      <FloatingNav />
+
+      {/* ── HERO ──────────────────────────────────────────────────────── */}
+      <div
+        style={{
+          position: "relative",
+          height: 400,
+          overflow: "hidden",
+          marginBottom: 0,
+        }}
+      >
+        {/*
+          [SPLINE-PERSONAL] — Replace this div with your Spline scene:
+          <Spline scene="..." style={{ position:"absolute", inset:0 }} />
+
+          [VIDEO-AMBIENT] — Or replace with a looping video:
+          <video src="/videos/dashboard-ambient.mp4" autoPlay muted loop playsInline
+            style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />
+
+          Source for video: pexels.com → "football stadium night aerial" (free commercial)
+        */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: `radial-gradient(ellipse 80% 120% at 60% 50%, ${tierColor}22 0%, #06060a 70%)`,
+          }}
+        />
+        {/* Placeholder label */}
+        <div
+          style={{
+            position: "absolute",
+            top: 80,
+            right: 40,
+            background: "rgba(0,0,0,0.4)",
+            border: `0.5px solid ${tierColor}40`,
+            borderRadius: 10,
+            padding: "10px 14px",
+            backdropFilter: "blur(8px)",
+          }}
         >
-          <HeroShowcase className="absolute inset-0" sports={["soccer", "basketball", "tennis"]} compact />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background/85 via-background/30 to-transparent" />
-          <div className="relative h-full flex flex-col justify-end p-6 sm:p-8 max-w-xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 backdrop-blur px-3 py-1 text-[11px] w-max">
-              <span className="h-1.5 w-1.5 rounded-full bg-success live-dot" /> LIVE · {matches.length} fixtures tracked
-            </div>
-            <h1 className="mt-3 font-display text-3xl sm:text-4xl font-semibold">
-              Welcome back{profile?.display_name ? `, ${profile.display_name}` : ""}.
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Your AI sports intelligence is live and watching every angle.</p>
+          <div style={{ fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: tierColor, marginBottom: 4 }}>
+            3D placeholder
           </div>
-        </motion.div>
-
-
-        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { icon: Trophy, label: "Tier", value: profile?.tier ?? "bronze", color: "text-warning" },
-            { icon: Target, label: "Accuracy", value: `${profile?.accuracy ?? 0}%`, color: "text-accent" },
-            { icon: TrendingUp, label: "Forecasts", value: profile?.forecasts_count ?? 0, color: "text-secondary" },
-            { icon: Sparkles, label: "Plan", value: plan, color: "text-primary" },
-          ].map((s, i) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              whileHover={{ y: -4 }}
-              className="glass rounded-2xl p-5 relative overflow-hidden"
-            >
-              <div className="absolute inset-0 grid-bg opacity-20" aria-hidden />
-              <div className="relative">
-                <s.icon className={`h-5 w-5 ${s.color}`} />
-                <div className="mt-3 text-xs uppercase tracking-wider text-muted-foreground">{s.label}</div>
-                <div className="mt-1 font-display text-2xl font-semibold capitalize">{s.value}</div>
-              </div>
-            </motion.div>
-          ))}
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", lineHeight: 1.5, maxWidth: 200 }}>
+            Add your Spline scene here.
+            <br />Search "sports stadium" on spline.design
+          </div>
         </div>
 
-        <div className="mt-10">
-          <div className="flex items-end justify-between mb-4">
-            <h2 className="font-display text-2xl font-semibold">Upcoming matches</h2>
-            <Link to="/matches" className="text-sm text-accent hover:underline flex items-center gap-1">
-              View all <ArrowRight className="h-3 w-3" />
+        {/* Overlays */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(6,6,10,0.2) 0%, rgba(6,6,10,0.85) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(6,6,10,0.8) 0%, transparent 60%)" }} />
+
+        {/* Welcome text */}
+        <div style={{ position: "absolute", bottom: 40, left: 0, padding: "0 64px" }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: tierColor, marginBottom: 12 }}>
+            {profile?.tier ?? "bronze"} tier
+          </div>
+          <h1
+            style={{
+              fontFamily: '"Space Grotesk", sans-serif',
+              fontSize: "clamp(28px, 3.5vw, 48px)",
+              fontWeight: 300,
+              letterSpacing: "-0.03em",
+              marginBottom: 8,
+            }}
+          >
+            {profile?.display_name ? `Welcome back, ${profile.display_name}.` : "Welcome back."}
+          </h1>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.4)" }}>
+            Your AI sports intelligence is live.
+          </p>
+        </div>
+      </div>
+
+      {/* ── STATS ROW ─────────────────────────────────────────────────── */}
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "40px 64px 0",
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 1,
+          borderTop: "0.5px solid rgba(255,255,255,0.06)",
+          borderBottom: "0.5px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        {[
+          { label: "Tier", value: profile?.tier ?? "Bronze", color: tierColor },
+          { label: "Accuracy", value: `${profile?.accuracy ?? 0}%`, color: "#60a5fa" },
+          { label: "Total forecasts", value: String(profile?.forecasts_count ?? 0), color: "#34d399" },
+          { label: "Active plan", value: plan, color: "#a78bfa" },
+        ].map((s, i) => (
+          <div
+            key={s.label}
+            style={{
+              padding: "28px 24px",
+              borderRight: i < 3 ? "0.5px solid rgba(255,255,255,0.06)" : "none",
+            }}
+          >
+            <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", marginBottom: 10 }}>
+              {s.label}
+            </div>
+            <div
+              style={{
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontSize: 28,
+                fontWeight: 400,
+                letterSpacing: "-0.03em",
+                color: s.color,
+                textTransform: "capitalize",
+              }}
+            >
+              {s.value}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── UPCOMING MATCHES ──────────────────────────────────────────── */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "56px 64px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
+          <h2 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: "clamp(20px, 2.5vw, 32px)", fontWeight: 300, letterSpacing: "-0.025em" }}>
+            Upcoming matches
+          </h2>
+          <Link to="/matches" style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", textDecoration: "none" }}>
+            All matches →
+          </Link>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1 }}>
+          {matches.slice(0, 6).map((m) => {
+            const accent = SPORT_ACCENT[m.sport] ?? "rgba(255,255,255,0.3)";
+            return (
+              <div
+                key={m.id}
+                style={{
+                  padding: "24px",
+                  border: "0.5px solid rgba(255,255,255,0.06)",
+                  borderRadius: 10,
+                  transition: "background 0.2s",
+                  cursor: "pointer",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 14 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: accent }} />
+                  <span style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+                    {m.sport}
+                  </span>
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 500, letterSpacing: "-0.015em", marginBottom: 3 }}>{m.home_team}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginBottom: 3 }}>vs</div>
+                <div style={{ fontSize: 15, fontWeight: 500, letterSpacing: "-0.015em", marginBottom: 14 }}>{m.away_team}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>
+                  {new Date(m.kickoff_at).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── PREMIUM SECTION ───────────────────────────────────────────── */}
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "0 64px 80px",
+          borderTop: "0.5px solid rgba(255,255,255,0.06)",
+          paddingTop: 56,
+        }}
+      >
+        <h2 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: "clamp(18px, 2.2vw, 28px)", fontWeight: 300, letterSpacing: "-0.025em", marginBottom: 24 }}>
+          Live momentum
+        </h2>
+        <TierGate current={plan} required="monthly" feature="Real-time win-probability shifts">
+          <div style={{ padding: "32px 28px", border: "0.5px solid rgba(255,255,255,0.06)", borderRadius: 12, color: "rgba(255,255,255,0.35)", fontSize: 14 }}>
+            Your live momentum charts will appear here once a match goes live.
+          </div>
+        </TierGate>
+      </div>
+
+      {/* ── QUICK LINKS ───────────────────────────────────────────────── */}
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "0 64px 100px",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 1,
+        }}
+      >
+        {[
+          { to: "/pricing", label: "Upgrade your plan", desc: "Unlock premium leagues, live momentum and revenue share.", cta: "See plans →" },
+          { to: "/leaderboard", label: "Leaderboard", desc: "See where the world's sharpest forecasters rank right now.", cta: "View rankings →" },
+        ].map((q) => (
+          <div key={q.to} style={{ padding: "28px 0", paddingRight: 48 }}>
+            <h3 style={{ fontSize: 17, fontWeight: 500, letterSpacing: "-0.01em", marginBottom: 8 }}>{q.label}</h3>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.55, marginBottom: 18 }}>{q.desc}</p>
+            <Link to={q.to} style={{ fontSize: 13, color: "#fff", textDecoration: "none", borderBottom: "0.5px solid rgba(255,255,255,0.25)", paddingBottom: 2 }}>
+              {q.cta}
             </Link>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {matches.map((m, i) => (
-              <motion.div
-                key={m.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                whileHover={{ y: -4, scale: 1.01 }}
-                className="glass rounded-2xl p-5"
-              >
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="uppercase tracking-wider">{sportEmoji[m.sport]} {m.sport}</span>
-                  <span>{m.league}</span>
-                </div>
-                <div className="mt-3 font-display text-lg font-semibold">{m.home_team} vs {m.away_team}</div>
-                <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                  <Calendar className="h-3 w-3" />
-                  {new Date(m.kickoff_at).toLocaleString()}
-                </div>
-                <Link to="/matches">
-                  <Button size="sm" variant="outline" className="mt-4 w-full">View prediction</Button>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        ))}
+      </div>
 
-        {/* Premium tier-gated section */}
-        <div className="mt-10">
-          <h2 className="font-display text-2xl font-semibold mb-4 flex items-center gap-2">
-            <Activity className="h-5 w-5 text-accent" /> Live momentum (premium)
-          </h2>
-          <TierGate
-            current={plan}
-            required="monthly"
-            feature="Real-time win-probability shifts"
-          >
-            <div className="glass rounded-2xl p-6">
-              <p className="text-sm text-muted-foreground">Your live momentum charts will appear here.</p>
-            </div>
-          </TierGate>
-        </div>
-
-        <div className="mt-10 grid md:grid-cols-2 gap-4">
-          <div className="glass rounded-2xl p-6">
-            <h3 className="font-display text-lg font-semibold">Upgrade your plan</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Unlock premium leagues, live momentum and revenue share.</p>
-            <Link to="/pricing"><Button className="mt-4 bg-gradient-to-r from-primary to-accent text-white border-0">See plans</Button></Link>
-          </div>
-          <div className="glass rounded-2xl p-6">
-            <h3 className="font-display text-lg font-semibold">Climb the leaderboard</h3>
-            <p className="mt-1 text-sm text-muted-foreground">See where the world's sharpest forecasters stand.</p>
-            <Link to="/leaderboard"><Button variant="outline" className="mt-4">View leaderboard</Button></Link>
-          </div>
-        </div>
-      </main>
       <SiteFooter />
     </div>
   );
