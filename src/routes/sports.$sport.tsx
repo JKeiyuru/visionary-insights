@@ -209,7 +209,7 @@ function SportPage() {
               pointerEvents: "none",
             }}
           >
-            {s.chapters.map((c, i) => (
+            {s.chapters.map((c: typeof s.chapters[number], i: number) => (
               <div
                 key={i}
                 style={{

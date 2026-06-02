@@ -167,9 +167,13 @@ function SplinePlaceholder({
 function VideoPlaceholder({
   search,
   accent,
+  label,
+  hint,
 }: {
   search: string;
   accent: string;
+  label?: string;
+  hint?: string;
 }) {
   return (
     <div
@@ -1229,74 +1233,3 @@ function MatchCard({
   );
 }
 
-// ── Placeholder components (remove when real assets are in) ───────────────────
-function SplinePlaceholder({ search, accent, bg }: { search: string; accent: string; bg: string }) {
-  return (
-    <div style={{ position: "absolute", inset: 0, background: bg, display: "flex", alignItems: "flex-start", justifyContent: "flex-end", padding: "72px 52px" }}>
-      <div
-        style={{
-          background: "rgba(0,0,0,0.5)",
-          border: `0.5px solid ${accent}30`,
-          borderRadius: 12,
-          padding: "14px 18px",
-          maxWidth: 260,
-          textAlign: "right",
-          backdropFilter: "blur(8px)",
-        }}
-      >
-        <div style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: accent, marginBottom: 6 }}>
-          3D placeholder
-        </div>
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>
-          Search{" "}
-          <a href="https://spline.design" target="_blank" rel="noreferrer" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "underline" }}>
-            spline.design
-          </a>{" "}
-          for{" "}
-          <span style={{ color: "rgba(255,255,255,0.7)" }}>"{search}"</span>
-          <br />
-          Fork → publish → replace this component
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function VideoPlaceholder({ search, accent, label, hint }: { search: string; accent: string; label: string; hint: string }) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        background: "rgba(255,255,255,0.015)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 28,
-        gap: 14,
-      }}
-    >
-      <div
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: "50%",
-          border: `1px solid ${accent}60`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div style={{ width: 0, height: 0, borderTop: "7px solid transparent", borderBottom: "7px solid transparent", borderLeft: `12px solid ${accent}`, marginLeft: 2 }} />
-      </div>
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>{label}</div>
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", lineHeight: 1.6, maxWidth: 280 }}>{hint}</div>
-        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.18)", marginTop: 8 }}>
-          Free footage: pexels.com → "{search}"
-        </div>
-      </div>
-    </div>
-  );
-}

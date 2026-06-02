@@ -197,7 +197,7 @@ function AdminsPanel({ currentUserId }: { currentUserId: string }) {
   }
 
   async function removeRole(userId: string, role: string) {
-    const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
+    const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role as "admin" | "moderator" | "super_admin" | "user");
     if (error) return toast.error(error.message);
     toast.success(`Removed ${role}`); load();
   }
