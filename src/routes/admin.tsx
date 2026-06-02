@@ -1,17 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Shield, Users, DollarSign, FileText, Loader2, Trash2, Plus, Crown, Ban, CheckCircle2, UserCog, ShieldOff } from "lucide-react";
-
 import { toast } from "sonner";
-import { SiteHeader } from "@/components/SiteHeader";
+import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -20,342 +11,149 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-/* ----------------------------- Types ----------------------------- */
-
-type PlanRow = {
-  id: string; slug: string; name: string; price_label: string;
-  amount_kes: number; period: string; features: string[];
-  featured: boolean; sort_order: number; active: boolean;
-};
+/* ── types ── */
+type ProfileRow = { id: string; display_name: string | null; phone: string | null; tier: string; subscription_plan: string; is_banned: boolean };
+type PlanRow    = { id: string; slug: string; name: string; price_label: string; amount_kes: number; period: string; features: string[]; featured: boolean; sort_order: number; active: boolean };
 type ContentRow = { id: string; key: string; title: string; body: string; updated_at: string };
-type ProfileRow = {
-  id: string; display_name: string | null; phone: string | null;
-  tier: string; subscription_plan: string; is_banned: boolean;
-};
-
-function AdminPage() {
-  const { user, loading, isAdmin, isSuperAdmin } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-  }, [user, loading, navigate]);
-
-  if (loading || !user) {
-    return <div className="min-h-screen grid place-items-center text-muted-foreground">Loading…</div>;
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen">
-        <SiteHeader />
-        <main className="mx-auto max-w-md px-4 py-16 text-center">
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-accent grid place-items-center">
-            <Shield className="h-7 w-7 text-primary-foreground" />
-          </div>
-          <h1 className="mt-5 font-display text-2xl font-semibold">Admin area</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            You don't have permission to view this page. Contact the platform owner if you believe this is a mistake.
-          </p>
-        </main>
-        <SiteFooter />
-      </div>
-    );
-  }
-
-
-  return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-accent grid place-items-center glow-ring">
-            {isSuperAdmin ? <Crown className="h-5 w-5 text-primary-foreground" /> : <Shield className="h-5 w-5 text-primary-foreground" />}
-          </div>
-          <div>
-            <h1 className="font-display text-3xl font-semibold">
-              {isSuperAdmin ? "Super admin" : "Admin"}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {isSuperAdmin ? "Full control of accounts, admins, pricing, content." : "Manage predictions, content and assigned users."}
-            </p>
-          </div>
-        </motion.div>
-
-        <Tabs defaultValue="users" className="mt-8">
-          <TabsList>
-            <TabsTrigger value="users"><Users className="h-4 w-4 mr-2" />Users</TabsTrigger>
-            {isSuperAdmin && <TabsTrigger value="admins"><UserCog className="h-4 w-4 mr-2" />Admins</TabsTrigger>}
-            {isSuperAdmin && <TabsTrigger value="plans"><DollarSign className="h-4 w-4 mr-2" />Plans</TabsTrigger>}
-            <TabsTrigger value="content"><FileText className="h-4 w-4 mr-2" />Legal content</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="users" className="mt-6"><UsersPanel /></TabsContent>
-          {isSuperAdmin && <TabsContent value="admins" className="mt-6"><AdminsPanel currentUserId={user.id} /></TabsContent>}
-          {isSuperAdmin && <TabsContent value="plans" className="mt-6"><PlansPanel /></TabsContent>}
-          <TabsContent value="content" className="mt-6"><ContentPanel /></TabsContent>
-        </Tabs>
-      </main>
-      <SiteFooter />
-    </div>
-  );
-}
-
-/* ----------------------------- Admins panel ----------------------------- */
-
-type RoleRow = { id: string; user_id: string; role: string };
+type RoleRow    = { id: string; user_id: string; role: string };
 type AdminProfile = ProfileRow & { roles: string[] };
-
-function AdminsPanel({ currentUserId }: { currentUserId: string }) {
-  const [people, setPeople] = useState<AdminProfile[]>([]);
-  const [email, setEmail] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function load() {
-    const { data: roles } = await supabase.from("user_roles").select("*");
-    if (!roles) return;
-    const uids = Array.from(new Set((roles as RoleRow[]).map(r => r.user_id)));
-    if (uids.length === 0) { setPeople([]); return; }
-    const { data: profs } = await supabase
-      .from("profiles")
-      .select("id,display_name,phone,tier,subscription_plan,is_banned")
-      .in("id", uids);
-    const map = new Map<string, string[]>();
-    (roles as RoleRow[]).forEach(r => {
-      const arr = map.get(r.user_id) ?? [];
-      arr.push(r.role);
-      map.set(r.user_id, arr);
-    });
-    setPeople(((profs as ProfileRow[]) ?? []).map(p => ({ ...p, roles: map.get(p.id) ?? [] })));
-  }
-
-  useEffect(() => {
-    load();
-    const ch = supabase.channel("admin-roles")
-      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, load)
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, []);
-
-  async function promoteByName() {
-    if (!email.trim()) return;
-    setBusy(true);
-    // Lookup by display_name (since auth.users is not directly queryable from client)
-    const { data: matches } = await supabase
-      .from("profiles")
-      .select("id,display_name")
-      .ilike("display_name", `%${email.trim()}%`)
-      .limit(2);
-    if (!matches || matches.length === 0) { setBusy(false); return toast.error("No matching profile. Ask the user to sign up first."); }
-    if (matches.length > 1) { setBusy(false); return toast.error("More than one match — refine the search."); }
-    const target = matches[0] as { id: string };
-    const { error } = await supabase.from("user_roles").insert({ user_id: target.id, role: "admin" });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    setEmail("");
-    toast.success("Promoted to admin");
-  }
-
-  async function setRole(userId: string, role: "admin" | "moderator" | "super_admin", give: boolean) {
-    if (userId === currentUserId && role === "super_admin" && !give) {
-      return toast.error("You can't remove your own super admin role.");
-    }
-    if (give) {
-      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
-      if (error) return toast.error(error.message);
-      toast.success(`Granted ${role}`);
-    } else {
-      const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
-      if (error) return toast.error(error.message);
-      toast.success(`Removed ${role}`);
-    }
-  }
-
-  async function toggleSuspend(p: AdminProfile) {
-    const { error } = await supabase.from("profiles").update({ is_banned: !p.is_banned }).eq("id", p.id);
-    if (error) return toast.error(error.message);
-    toast.success(p.is_banned ? "Account restored" : "Account suspended");
-    load();
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="glass rounded-2xl p-4">
-        <h3 className="font-display text-lg font-semibold">Promote a user to admin</h3>
-        <p className="text-xs text-muted-foreground mt-1">
-          The user must have signed up first. Search by display name, then promote. (Super admin promotion happens directly in the database for safety.)
-        </p>
-        <div className="mt-3 flex gap-2">
-          <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Display name search…" className="flex-1" />
-          <Button onClick={promoteByName} disabled={busy} className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4 mr-1" />Promote</>}
-          </Button>
-        </div>
-      </div>
-
-      <div className="glass rounded-2xl p-4">
-        <h3 className="font-display text-lg font-semibold">Privileged accounts</h3>
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-xs uppercase text-muted-foreground">
-              <tr className="text-left">
-                <th className="py-2 pr-3">User</th>
-                <th className="py-2 pr-3">Roles</th>
-                <th className="py-2 pr-3">Status</th>
-                <th className="py-2 pr-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {people.map((p) => {
-                const isSuper = p.roles.includes("super_admin");
-                const isAdminRow = p.roles.includes("admin");
-                const isMod = p.roles.includes("moderator");
-                return (
-                  <tr key={p.id} className="border-t border-border/40">
-                    <td className="py-2 pr-3">
-                      <div className="font-medium flex items-center gap-1">
-                        {isSuper && <Crown className="h-3 w-3 text-accent" />}
-                        {p.display_name ?? "—"}
-                        {p.id === currentUserId && <span className="text-[10px] text-muted-foreground">(you)</span>}
-                      </div>
-                      <div className="text-xs text-muted-foreground">{p.id.slice(0, 8)}…</div>
-                    </td>
-                    <td className="py-2 pr-3 text-xs">
-                      {p.roles.length === 0 ? <span className="text-muted-foreground">none</span> : p.roles.join(" · ")}
-                    </td>
-                    <td className="py-2 pr-3">
-                      {p.is_banned
-                        ? <span className="inline-flex items-center gap-1 text-xs text-destructive"><Ban className="h-3 w-3" />Suspended</span>
-                        : <span className="inline-flex items-center gap-1 text-xs text-success"><CheckCircle2 className="h-3 w-3" />Active</span>}
-                    </td>
-                    <td className="py-2 pr-3 text-right space-x-1">
-                      {!isAdminRow && !isSuper && (
-                        <Button size="sm" variant="outline" onClick={() => setRole(p.id, "admin", true)}>Make admin</Button>
-                      )}
-                      {isAdminRow && !isSuper && (
-                        <Button size="sm" variant="outline" onClick={() => setRole(p.id, "admin", false)}>
-                          <ShieldOff className="h-3 w-3 mr-1" />Demote
-                        </Button>
-                      )}
-                      {!isMod && !isSuper && (
-                        <Button size="sm" variant="ghost" onClick={() => setRole(p.id, "moderator", true)}>+ Mod</Button>
-                      )}
-                      {!isSuper && (
-                        <Button size="sm" variant={p.is_banned ? "outline" : "destructive"} onClick={() => toggleSuspend(p)}>
-                          {p.is_banned ? "Restore" : "Suspend"}
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-              {people.length === 0 && (
-                <tr><td colSpan={4} className="py-6 text-center text-muted-foreground text-sm">No admins or moderators yet.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ----------------------------- Users ----------------------------- */
 
 const TIERS = ["bronze", "silver", "gold", "oracle"];
 const PLANS = ["free", "weekly", "monthly", "elite"];
 
+/* ── shared style helpers ── */
+const S = {
+  label:   { fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "rgba(255,255,255,0.3)", marginBottom: 8 },
+  input:   { padding: "10px 12px", borderRadius: 8, border: "0.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#fff", fontSize: 13, outline: "none", fontFamily: '"Inter", sans-serif', width: "100%" },
+  btn:     (accent?: boolean) => ({ padding: "9px 18px", borderRadius: 8, border: accent ? "none" : "0.5px solid rgba(255,255,255,0.12)", background: accent ? "#fff" : "rgba(255,255,255,0.05)", color: accent ? "#000" : "rgba(255,255,255,0.7)", fontSize: 12, cursor: "pointer", fontFamily: '"Inter", sans-serif', transition: "opacity 0.2s" }),
+  cell:    { padding: "14px 0", borderBottom: "0.5px solid rgba(255,255,255,0.05)", fontSize: 13, color: "rgba(255,255,255,0.65)", verticalAlign: "top" as const },
+  section: { background: "rgba(255,255,255,0.02)", border: "0.5px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "24px 28px", marginBottom: 16 },
+};
+
+/* ════════════════════════════════════════════════════════════════════ */
+function AdminPage() {
+  const { user, loading, isAdmin, isSuperAdmin } = useAuth();
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<"users" | "admins" | "plans" | "content">("users");
+
+  useEffect(() => { if (!loading && !user) navigate({ to: "/login" }); }, [user, loading, navigate]);
+
+  if (loading || !user) return <Spinner />;
+
+  if (!isAdmin) return (
+    <Wrap>
+      <div style={{ padding: "100px 64px", textAlign: "center" }}>
+        <h1 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: 32, fontWeight: 300, marginBottom: 12 }}>Admin area</h1>
+        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>You don't have permission to view this page.</p>
+      </div>
+    </Wrap>
+  );
+
+  const tabs: { key: typeof tab; label: string; show: boolean }[] = [
+    { key: "users",   label: "Users",         show: true },
+    { key: "admins",  label: "Admins",        show: isSuperAdmin },
+    { key: "plans",   label: "Plans",         show: isSuperAdmin },
+    { key: "content", label: "Legal content", show: true },
+  ];
+
+  return (
+    <Wrap>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "100px 64px 80px" }}>
+        <p style={S.label}>Admin panel</p>
+        <h1 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: 36, fontWeight: 300, letterSpacing: "-0.025em", marginBottom: 40 }}>
+          {isSuperAdmin ? "Super admin" : "Admin"}
+        </h1>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 0, borderBottom: "0.5px solid rgba(255,255,255,0.07)", marginBottom: 36 }}>
+          {tabs.filter(t => t.show).map(t => (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              style={{ background: "none", border: "none", padding: "12px 18px", fontSize: 13, cursor: "pointer", color: tab === t.key ? "#fff" : "rgba(255,255,255,0.35)", borderBottom: tab === t.key ? "1.5px solid #fff" : "1.5px solid transparent", transition: "color 0.2s", fontFamily: '"Inter", sans-serif' }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {tab === "users"   && <UsersPanel />}
+        {tab === "admins"  && isSuperAdmin && <AdminsPanel currentUserId={user.id} />}
+        {tab === "plans"   && isSuperAdmin && <PlansPanel />}
+        {tab === "content" && <ContentPanel />}
+      </div>
+    </Wrap>
+  );
+}
+
+/* ── Users ── */
 function UsersPanel() {
   const [rows, setRows] = useState<ProfileRow[]>([]);
   const [q, setQ] = useState("");
 
+  async function load() {
+    const { data } = await supabase.from("profiles").select("id,display_name,phone,tier,subscription_plan,is_banned").order("display_name");
+    if (data) setRows(data as ProfileRow[]);
+  }
   useEffect(() => {
-    async function load() {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id,display_name,phone,tier,subscription_plan,is_banned")
-        .order("display_name");
-      if (data) setRows(data as unknown as ProfileRow[]);
-    }
     load();
-    const channel = supabase
-      .channel("admin-profiles")
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, load)
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const ch = supabase.channel("adm-profiles").on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, load).subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   async function update(id: string, patch: Partial<ProfileRow>) {
     const { error } = await supabase.from("profiles").update(patch as never).eq("id", id);
-    if (error) toast.error(error.message);
-    else toast.success("Updated");
+    if (error) toast.error(error.message); else { toast.success("Updated"); load(); }
   }
 
-  const filtered = rows.filter(r =>
-    !q ||
-    r.display_name?.toLowerCase().includes(q.toLowerCase()) ||
-    r.phone?.includes(q) ||
-    r.id.includes(q),
-  );
+  const filtered = rows.filter(r => !q || r.display_name?.toLowerCase().includes(q.toLowerCase()) || r.phone?.includes(q) || r.id.includes(q));
 
   return (
-    <div className="glass rounded-2xl p-4">
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <Input placeholder="Search by name, phone or id…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-sm" />
-        <span className="text-xs text-muted-foreground">{filtered.length} accounts</span>
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <input style={{ ...S.input, maxWidth: 280 }} placeholder="Search name, phone or id…" value={q} onChange={e => setQ(e.target.value)} />
+        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>{filtered.length} accounts</span>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="text-xs uppercase text-muted-foreground">
-            <tr className="text-left">
-              <th className="py-2 pr-3">User</th>
-              <th className="py-2 pr-3">Phone</th>
-              <th className="py-2 pr-3">Tier</th>
-              <th className="py-2 pr-3">Plan</th>
-              <th className="py-2 pr-3">Status</th>
-              <th className="py-2 pr-3 text-right">Actions</th>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+              {["User", "Phone", "Tier", "Plan", "Status", ""].map(h => (
+                <th key={h} style={{ padding: "8px 12px 12px", textAlign: "left", fontWeight: 400 }}>{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => (
-              <tr key={r.id} className="border-t border-border/40">
-                <td className="py-2 pr-3">
-                  <div className="font-medium">{r.display_name ?? "—"}</div>
-                  <div className="text-xs text-muted-foreground">{r.id.slice(0, 8)}…</div>
+            {filtered.map(r => (
+              <tr key={r.id}>
+                <td style={S.cell}>
+                  <div style={{ fontWeight: 500 }}>{r.display_name ?? "—"}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 2 }}>{r.id.slice(0,8)}…</div>
                 </td>
-                <td className="py-2 pr-3 text-muted-foreground">{r.phone ?? "—"}</td>
-                <td className="py-2 pr-3">
-                  <select
-                    value={r.tier}
-                    onChange={(e) => update(r.id, { tier: e.target.value })}
-                    className="bg-input rounded-md px-2 py-1 text-xs"
-                  >
+                <td style={{ ...S.cell, color: "rgba(255,255,255,0.4)" }}>{r.phone ?? "—"}</td>
+                <td style={S.cell}>
+                  <select value={r.tier} onChange={e => update(r.id, { tier: e.target.value })}
+                    style={{ ...S.input, width: "auto", padding: "5px 8px" }}>
                     {TIERS.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </td>
-                <td className="py-2 pr-3">
-                  <select
-                    value={r.subscription_plan}
-                    onChange={(e) => update(r.id, { subscription_plan: e.target.value })}
-                    className="bg-input rounded-md px-2 py-1 text-xs"
-                  >
+                <td style={S.cell}>
+                  <select value={r.subscription_plan} onChange={e => update(r.id, { subscription_plan: e.target.value })}
+                    style={{ ...S.input, width: "auto", padding: "5px 8px" }}>
                     {PLANS.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </td>
-                <td className="py-2 pr-3">
-                  {r.is_banned
-                    ? <span className="inline-flex items-center gap-1 text-xs text-destructive"><Ban className="h-3 w-3" />Banned</span>
-                    : <span className="inline-flex items-center gap-1 text-xs text-success"><CheckCircle2 className="h-3 w-3" />Active</span>}
+                <td style={S.cell}>
+                  <span style={{ fontSize: 11, color: r.is_banned ? "#f87171" : "#34d399" }}>
+                    {r.is_banned ? "Banned" : "Active"}
+                  </span>
                 </td>
-                <td className="py-2 pr-3 text-right">
-                  <Button size="sm" variant="outline" onClick={() => update(r.id, { is_banned: !r.is_banned })}>
+                <td style={S.cell}>
+                  <button onClick={() => update(r.id, { is_banned: !r.is_banned })} style={S.btn()}>
                     {r.is_banned ? "Unban" : "Ban"}
-                  </Button>
+                  </button>
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={6} className="py-6 text-center text-muted-foreground text-sm">No matches</td></tr>
+              <tr><td colSpan={6} style={{ padding: "48px 0", textAlign: "center", color: "rgba(255,255,255,0.2)", fontSize: 14 }}>No matches</td></tr>
             )}
           </tbody>
         </table>
@@ -364,188 +162,241 @@ function UsersPanel() {
   );
 }
 
-/* ----------------------------- Plans ----------------------------- */
+/* ── Admins ── */
+function AdminsPanel({ currentUserId }: { currentUserId: string }) {
+  const [people, setPeople] = useState<AdminProfile[]>([]);
+  const [search, setSearch] = useState("");
+  const [busy, setBusy] = useState(false);
 
+  async function load() {
+    const { data: roles } = await supabase.from("user_roles").select("*");
+    if (!roles) return;
+    const uids = Array.from(new Set((roles as RoleRow[]).map(r => r.user_id)));
+    if (!uids.length) { setPeople([]); return; }
+    const { data: profs } = await supabase.from("profiles").select("id,display_name,phone,tier,subscription_plan,is_banned").in("id", uids);
+    const map = new Map<string, string[]>();
+    (roles as RoleRow[]).forEach(r => { const a = map.get(r.user_id) ?? []; a.push(r.role); map.set(r.user_id, a); });
+    setPeople(((profs as ProfileRow[]) ?? []).map(p => ({ ...p, roles: map.get(p.id) ?? [] })));
+  }
+  useEffect(() => {
+    load();
+    const ch = supabase.channel("adm-roles").on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, load).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
+
+  async function promote() {
+    if (!search.trim()) return;
+    setBusy(true);
+    const { data } = await supabase.from("profiles").select("id").ilike("display_name", `%${search.trim()}%`).limit(2);
+    if (!data || data.length === 0) { toast.error("No matching profile."); setBusy(false); return; }
+    if (data.length > 1) { toast.error("Multiple matches — be more specific."); setBusy(false); return; }
+    const { error } = await supabase.from("user_roles").insert({ user_id: (data[0] as { id: string }).id, role: "admin" });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    setSearch(""); toast.success("Promoted to admin"); load();
+  }
+
+  async function removeRole(userId: string, role: string) {
+    const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
+    if (error) return toast.error(error.message);
+    toast.success(`Removed ${role}`); load();
+  }
+
+  return (
+    <div>
+      <div style={S.section}>
+        <p style={S.label}>Promote by display name</p>
+        <div style={{ display: "flex", gap: 10 }}>
+          <input style={{ ...S.input, flex: 1 }} placeholder="Display name…" value={search} onChange={e => setSearch(e.target.value)} />
+          <button onClick={promote} disabled={busy} style={S.btn(true)}>
+            {busy ? "…" : "Promote to admin"}
+          </button>
+        </div>
+      </div>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+            {["User", "Roles", "Status", ""].map(h => <th key={h} style={{ padding: "8px 12px 12px", textAlign: "left", fontWeight: 400 }}>{h}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {people.map(p => (
+            <tr key={p.id}>
+              <td style={S.cell}>
+                <div style={{ fontWeight: 500 }}>{p.display_name ?? "—"} {p.id === currentUserId && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>(you)</span>}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)" }}>{p.id.slice(0,8)}…</div>
+              </td>
+              <td style={{ ...S.cell, fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{p.roles.join(" · ") || "—"}</td>
+              <td style={S.cell}><span style={{ fontSize: 11, color: p.is_banned ? "#f87171" : "#34d399" }}>{p.is_banned ? "Suspended" : "Active"}</span></td>
+              <td style={S.cell}>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {p.roles.filter(r => r !== "super_admin").map(r => (
+                    <button key={r} onClick={() => removeRole(p.id, r)} style={S.btn()}>Remove {r}</button>
+                  ))}
+                </div>
+              </td>
+            </tr>
+          ))}
+          {people.length === 0 && <tr><td colSpan={4} style={{ padding: "48px 0", textAlign: "center", color: "rgba(255,255,255,0.2)", fontSize: 14 }}>No admins yet.</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ── Plans ── */
 function PlansPanel() {
   const [rows, setRows] = useState<PlanRow[]>([]);
-
+  async function load() {
+    const { data } = await supabase.from("plans").select("*").order("sort_order");
+    if (data) setRows(data as PlanRow[]);
+  }
   useEffect(() => {
-    async function load() {
-      const { data } = await supabase.from("plans").select("*").order("sort_order");
-      if (data) setRows(data as PlanRow[]);
-    }
     load();
-    const channel = supabase
-      .channel("admin-plans")
-      .on("postgres_changes", { event: "*", schema: "public", table: "plans" }, load)
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const ch = supabase.channel("adm-plans").on("postgres_changes", { event: "*", schema: "public", table: "plans" }, load).subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   async function save(p: PlanRow) {
-    const { error } = await supabase.from("plans").update({
-      name: p.name, price_label: p.price_label, amount_kes: p.amount_kes,
-      period: p.period, features: p.features, featured: p.featured,
-      sort_order: p.sort_order, active: p.active, updated_at: new Date().toISOString(),
-    }).eq("id", p.id);
-    if (error) toast.error(error.message);
-    else toast.success(`${p.name} updated — clients refreshed live`);
+    const { error } = await supabase.from("plans").update({ name: p.name, price_label: p.price_label, amount_kes: p.amount_kes, period: p.period, features: p.features, featured: p.featured, sort_order: p.sort_order, active: p.active, updated_at: new Date().toISOString() }).eq("id", p.id);
+    if (error) toast.error(error.message); else toast.success(`${p.name} saved`);
   }
-
+  async function add() {
+    const slug = prompt("Plan slug (e.g. annual):"); if (!slug) return;
+    const { error } = await supabase.from("plans").insert({ slug, name: slug, price_label: "KES 0", amount_kes: 0, period: "/month", features: [], sort_order: rows.length + 1 });
+    if (error) toast.error(error.message);
+  }
   async function remove(id: string) {
     if (!confirm("Delete this plan?")) return;
     const { error } = await supabase.from("plans").delete().eq("id", id);
     if (error) toast.error(error.message);
   }
 
-  async function add() {
-    const slug = prompt("Plan slug (e.g. annual):");
-    if (!slug) return;
-    const { error } = await supabase.from("plans").insert({
-      slug, name: slug, price_label: "KES 0", amount_kes: 0,
-      period: "/month", features: [], sort_order: rows.length + 1,
-    });
-    if (error) toast.error(error.message);
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={add} size="sm" className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
-          <Plus className="h-4 w-4 mr-1" /> Add plan
-        </Button>
+    <div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
+        <button onClick={add} style={S.btn(true)}>+ Add plan</button>
       </div>
-      <div className="grid md:grid-cols-2 gap-4">
-        {rows.map((p) => <PlanEditor key={p.id} plan={p} onSave={save} onRemove={remove} />)}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+        {rows.map(p => <PlanEditor key={p.id} plan={p} onSave={save} onRemove={remove} />)}
       </div>
     </div>
   );
 }
 
 function PlanEditor({ plan, onSave, onRemove }: { plan: PlanRow; onSave: (p: PlanRow) => void; onRemove: (id: string) => void }) {
-  const [draft, setDraft] = useState(plan);
-  useEffect(() => setDraft(plan), [plan]);
-
+  const [d, setD] = useState(plan);
+  useEffect(() => setD(plan), [plan]);
   return (
-    <div className="glass rounded-2xl p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="text-xs uppercase text-muted-foreground">slug: {draft.slug}</div>
-        <div className="flex items-center gap-2 text-xs">
-          Featured
-          <Switch checked={draft.featured} onCheckedChange={(v) => setDraft({ ...draft, featured: v })} />
-          Active
-          <Switch checked={draft.active} onCheckedChange={(v) => setDraft({ ...draft, active: v })} />
+    <div style={S.section}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>slug: {d.slug}</span>
+        <div style={{ display: "flex", gap: 16, fontSize: 12 }}>
+          <label style={{ display: "flex", gap: 6, alignItems: "center", cursor: "pointer", color: "rgba(255,255,255,0.5)" }}>
+            <input type="checkbox" checked={d.featured} onChange={e => setD({ ...d, featured: e.target.checked })} /> Featured
+          </label>
+          <label style={{ display: "flex", gap: 6, alignItems: "center", cursor: "pointer", color: "rgba(255,255,255,0.5)" }}>
+            <input type="checkbox" checked={d.active} onChange={e => setD({ ...d, active: e.target.checked })} /> Active
+          </label>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+        {[
+          { label: "Name",        val: d.name,        set: (v: string) => setD({ ...d, name: v }) },
+          { label: "Period",      val: d.period,      set: (v: string) => setD({ ...d, period: v }) },
+          { label: "Price label", val: d.price_label, set: (v: string) => setD({ ...d, price_label: v }) },
+        ].map(f => (
+          <div key={f.label}>
+            <div style={S.label}>{f.label}</div>
+            <input style={S.input} value={f.val} onChange={e => f.set(e.target.value)} />
+          </div>
+        ))}
         <div>
-          <Label className="text-xs">Name</Label>
-          <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-        </div>
-        <div>
-          <Label className="text-xs">Period</Label>
-          <Input value={draft.period} onChange={(e) => setDraft({ ...draft, period: e.target.value })} />
-        </div>
-        <div>
-          <Label className="text-xs">Price label</Label>
-          <Input value={draft.price_label} onChange={(e) => setDraft({ ...draft, price_label: e.target.value })} />
-        </div>
-        <div>
-          <Label className="text-xs">Amount (KES)</Label>
-          <Input type="number" value={draft.amount_kes} onChange={(e) => setDraft({ ...draft, amount_kes: Number(e.target.value) })} />
+          <div style={S.label}>Amount (KES)</div>
+          <input style={S.input} type="number" value={d.amount_kes} onChange={e => setD({ ...d, amount_kes: Number(e.target.value) })} />
         </div>
       </div>
-      <div>
-        <Label className="text-xs">Features (one per line)</Label>
-        <Textarea
-          rows={4}
-          value={(draft.features ?? []).join("\n")}
-          onChange={(e) => setDraft({ ...draft, features: e.target.value.split("\n").filter(Boolean) })}
-        />
+      <div style={{ marginBottom: 16 }}>
+        <div style={S.label}>Features (one per line)</div>
+        <textarea rows={4} style={{ ...S.input, resize: "vertical" }} value={(d.features ?? []).join("\n")} onChange={e => setD({ ...d, features: e.target.value.split("\n").filter(Boolean) })} />
       </div>
-      <div className="flex justify-between gap-2">
-        <Button variant="outline" size="sm" onClick={() => onRemove(plan.id)}>
-          <Trash2 className="h-4 w-4 mr-1" /> Delete
-        </Button>
-        <Button size="sm" onClick={() => onSave(draft)} className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
-          Save & broadcast
-        </Button>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <button onClick={() => onRemove(plan.id)} style={S.btn()}>Delete</button>
+        <button onClick={() => onSave(d)} style={S.btn(true)}>Save</button>
       </div>
     </div>
   );
 }
 
-/* --------------------------- Legal content --------------------------- */
-
+/* ── Content ── */
 function ContentPanel() {
   const [rows, setRows] = useState<ContentRow[]>([]);
-
+  async function load() {
+    const { data } = await supabase.from("site_content").select("*").order("key");
+    if (data) setRows(data as ContentRow[]);
+  }
   useEffect(() => {
-    async function load() {
-      const { data } = await supabase.from("site_content").select("*").order("key");
-      if (data) setRows(data as ContentRow[]);
-    }
     load();
-    const channel = supabase
-      .channel("admin-content")
-      .on("postgres_changes", { event: "*", schema: "public", table: "site_content" }, load)
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const ch = supabase.channel("adm-content").on("postgres_changes", { event: "*", schema: "public", table: "site_content" }, load).subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   async function save(r: ContentRow) {
-    const { error } = await supabase.from("site_content").update({
-      title: r.title, body: r.body, updated_at: new Date().toISOString(),
-    }).eq("id", r.id);
-    if (error) toast.error(error.message);
-    else toast.success(`${r.title} updated — visible on /${r.key} now`);
+    const { error } = await supabase.from("site_content").update({ title: r.title, body: r.body, updated_at: new Date().toISOString() }).eq("id", r.id);
+    if (error) toast.error(error.message); else toast.success(`${r.title} saved`);
   }
-
-  async function addDoc() {
-    const key = prompt("New content key (e.g. faq, about):");
-    if (!key) return;
+  async function add() {
+    const key = prompt("Content key (e.g. faq):"); if (!key) return;
     const { error } = await supabase.from("site_content").insert({ key, title: key, body: "" });
     if (error) toast.error(error.message);
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={addDoc} size="sm" className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
-          <Plus className="h-4 w-4 mr-1" /> Add document
-        </Button>
+    <div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
+        <button onClick={add} style={S.btn(true)}>+ Add document</button>
       </div>
-      <div className="space-y-4">
-        {rows.map((r) => <ContentEditor key={r.id} row={r} onSave={save} />)}
-      </div>
+      {rows.map(r => <ContentEditor key={r.id} row={r} onSave={save} />)}
     </div>
   );
 }
 
 function ContentEditor({ row, onSave }: { row: ContentRow; onSave: (r: ContentRow) => void }) {
-  const [draft, setDraft] = useState(row);
-  useEffect(() => setDraft(row), [row]);
+  const [d, setD] = useState(row);
+  useEffect(() => setD(row), [row]);
   return (
-    <div className="glass rounded-2xl p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="text-xs uppercase text-muted-foreground">/{draft.key}</div>
-        <span className="text-xs text-muted-foreground">Updated {new Date(draft.updated_at).toLocaleString()}</span>
+    <div style={{ ...S.section, marginBottom: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>/{d.key}</span>
+        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.2)" }}>Updated {new Date(d.updated_at).toLocaleString()}</span>
       </div>
-      <Input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} className="font-display text-lg" />
-      <Textarea
-        rows={12}
-        className="font-mono text-xs"
-        value={draft.body}
-        onChange={(e) => setDraft({ ...draft, body: e.target.value })}
-      />
-      <p className="text-[11px] text-muted-foreground">
-        Supports basic markdown: <code>## Heading</code> and <code>**bold**</code>.
+      <input style={{ ...S.input, marginBottom: 10, fontSize: 16 }} value={d.title} onChange={e => setD({ ...d, title: e.target.value })} />
+      <textarea rows={12} style={{ ...S.input, fontFamily: "monospace", fontSize: 12, resize: "vertical" }} value={d.body} onChange={e => setD({ ...d, body: e.target.value })} />
+      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", margin: "8px 0 14px" }}>
+        Supports <code>## Heading</code> and <code>**bold**</code>.
       </p>
-      <div className="flex justify-end">
-        <Button size="sm" onClick={() => onSave(draft)} className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
-          Save & broadcast
-        </Button>
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <button onClick={() => onSave(d)} style={S.btn(true)}>Save & broadcast</button>
       </div>
+    </div>
+  );
+}
+
+/* ── shared wrappers ── */
+function Wrap({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ background: "#06060a", color: "#fff", minHeight: "100vh", fontFamily: '"Inter", sans-serif' }}>
+      <FloatingNav />
+      {children}
+      <SiteFooter />
+    </div>
+  );
+}
+
+function Spinner() {
+  return (
+    <div style={{ background: "#06060a", minHeight: "100vh", display: "grid", placeItems: "center", color: "rgba(255,255,255,0.25)", fontSize: 13 }}>
+      Loading…
     </div>
   );
 }
