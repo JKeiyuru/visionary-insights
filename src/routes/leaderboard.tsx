@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Crown, Trophy, Award, Target } from "lucide-react";
-import { SiteHeader } from "@/components/SiteHeader";
+import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -11,17 +9,24 @@ export const Route = createFileRoute("/leaderboard")({
   component: LeaderboardPage,
 });
 
-type Row = { id: string; display_name: string | null; tier: string; accuracy: number; forecasts_count: number };
+type Row = {
+  id: string;
+  display_name: string | null;
+  tier: string;
+  accuracy: number;
+  forecasts_count: number;
+};
 
-const tierIcon: Record<string, { Icon: typeof Crown; color: string }> = {
-  oracle: { Icon: Crown, color: "text-violet-400" },
-  gold: { Icon: Trophy, color: "text-yellow-400" },
-  silver: { Icon: Award, color: "text-slate-300" },
-  bronze: { Icon: Target, color: "text-amber-600" },
+const TIER_COLOR: Record<string, string> = {
+  oracle: "#a78bfa",
+  gold: "#eab308",
+  silver: "#94a3b8",
+  bronze: "#b45309",
 };
 
 function LeaderboardPage() {
   const [rows, setRows] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     supabase
@@ -29,51 +34,221 @@ function LeaderboardPage() {
       .select("id, display_name, tier, accuracy, forecasts_count")
       .order("accuracy", { ascending: false })
       .limit(50)
-      .then(({ data }) => setRows((data as Row[]) ?? []));
+      .then(({ data }) => {
+        setRows((data as Row[]) ?? []);
+        setLoading(false);
+      });
   }, []);
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <main className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-display text-4xl font-semibold">Global leaderboard</h1>
-          <p className="text-muted-foreground mt-1">The sharpest forecasters on VisionPlay.</p>
-        </motion.div>
+    <div
+      style={{
+        background: "#06060a",
+        color: "#fff",
+        minHeight: "100vh",
+        fontFamily: '"Inter", sans-serif',
+      }}
+    >
+      <FloatingNav />
 
-        <div className="mt-8 glass rounded-2xl overflow-hidden">
-          <div className="grid grid-cols-12 gap-2 px-5 py-3 border-b border-border/40 text-xs uppercase tracking-wider text-muted-foreground">
-            <div className="col-span-1">#</div>
-            <div className="col-span-5">Analyst</div>
-            <div className="col-span-3">Tier</div>
-            <div className="col-span-2 text-right">Accuracy</div>
-            <div className="col-span-1 text-right">#</div>
-          </div>
-          {rows.length === 0 && (
-            <div className="p-10 text-center text-muted-foreground text-sm">No forecasters yet — be the first!</div>
-          )}
-          {rows.map((r, i) => {
-            const t = tierIcon[r.tier] ?? tierIcon.bronze;
-            return (
-              <motion.div
-                key={r.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className="grid grid-cols-12 gap-2 px-5 py-4 border-b border-border/20 items-center hover:bg-surface-2/40 transition"
-              >
-                <div className="col-span-1 font-display font-semibold">{i + 1}</div>
-                <div className="col-span-5 font-medium">{r.display_name ?? "Anonymous"}</div>
-                <div className="col-span-3 flex items-center gap-2 capitalize">
-                  <t.Icon className={`h-4 w-4 ${t.color}`} /> {r.tier}
-                </div>
-                <div className="col-span-2 text-right text-accent font-semibold">{r.accuracy}%</div>
-                <div className="col-span-1 text-right text-muted-foreground text-sm">{r.forecasts_count}</div>
-              </motion.div>
-            );
-          })}
+      {/* Header */}
+      <div
+        style={{ maxWidth: 1100, margin: "0 auto", padding: "100px 64px 56px" }}
+      >
+        <p
+          style={{
+            fontSize: 11,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.3)",
+            marginBottom: 14,
+          }}
+        >
+          Community
+        </p>
+        <h1
+          style={{
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: "clamp(36px, 4.5vw, 64px)",
+            fontWeight: 300,
+            letterSpacing: "-0.035em",
+            marginBottom: 14,
+          }}
+        >
+          Leaderboard.
+        </h1>
+        <p
+          style={{
+            fontSize: 16,
+            color: "rgba(255,255,255,0.4)",
+            maxWidth: 420,
+          }}
+        >
+          The sharpest forecasters on VisionPlay, ranked by accuracy over
+          their full record.
+        </p>
+      </div>
+
+      {/* Table */}
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "0 64px 100px",
+        }}
+      >
+        {/* Column headers */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "48px 1fr 120px 100px 80px",
+            gap: 16,
+            padding: "10px 0",
+            borderBottom: "0.5px solid rgba(255,255,255,0.07)",
+            fontSize: 10,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.25)",
+          }}
+        >
+          <div>#</div>
+          <div>Analyst</div>
+          <div>Tier</div>
+          <div style={{ textAlign: "right" }}>Accuracy</div>
+          <div style={{ textAlign: "right" }}>Forecasts</div>
         </div>
-      </main>
+
+        {loading &&
+          [1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div
+              key={i}
+              style={{
+                height: 52,
+                borderBottom: "0.5px solid rgba(255,255,255,0.04)",
+                background: `rgba(255,255,255,${0.005 + (8 - i) * 0.001})`,
+              }}
+            />
+          ))}
+
+        {!loading && rows.length === 0 && (
+          <div
+            style={{
+              padding: "80px 0",
+              textAlign: "center",
+              fontSize: 14,
+              color: "rgba(255,255,255,0.2)",
+            }}
+          >
+            No forecasters yet — be the first.
+          </div>
+        )}
+
+        {rows.map((r, i) => {
+          const tierColor = TIER_COLOR[r.tier] ?? TIER_COLOR.bronze;
+          const isTop3 = i < 3;
+          return (
+            <div
+              key={r.id}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "48px 1fr 120px 100px 80px",
+                gap: 16,
+                padding: "16px 0",
+                borderBottom: "0.5px solid rgba(255,255,255,0.04)",
+                alignItems: "center",
+                transition: "background 0.2s",
+                borderRadius: 6,
+                cursor: "default",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background =
+                  "rgba(255,255,255,0.02)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "transparent")
+              }
+            >
+              {/* Rank */}
+              <div
+                style={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontSize: isTop3 ? 18 : 14,
+                  fontWeight: isTop3 ? 500 : 400,
+                  color: isTop3 ? "#fff" : "rgba(255,255,255,0.25)",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {i + 1}
+              </div>
+
+              {/* Name */}
+              <div
+                style={{
+                  fontSize: 15,
+                  fontWeight: isTop3 ? 500 : 400,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                {r.display_name ?? "Anonymous"}
+              </div>
+
+              {/* Tier */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                }}
+              >
+                <div
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: "50%",
+                    background: tierColor,
+                    flexShrink: 0,
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: tierColor,
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {r.tier}
+                </span>
+              </div>
+
+              {/* Accuracy */}
+              <div
+                style={{
+                  textAlign: "right",
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontSize: 15,
+                  fontWeight: 500,
+                  letterSpacing: "-0.02em",
+                  color: isTop3 ? "#34d399" : "rgba(255,255,255,0.7)",
+                }}
+              >
+                {r.accuracy}%
+              </div>
+
+              {/* Count */}
+              <div
+                style={{
+                  textAlign: "right",
+                  fontSize: 13,
+                  color: "rgba(255,255,255,0.25)",
+                }}
+              >
+                {r.forecasts_count}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       <SiteFooter />
     </div>
   );
