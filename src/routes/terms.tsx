@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { SiteHeader } from "@/components/SiteHeader";
+import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { LegalContent } from "@/components/LegalContent";
 
@@ -10,14 +9,12 @@ export const Route = createFileRoute("/terms")({
 });
 
 function TermsPage() {
-  const [tick, setTick] = useState(0); // forces LegalContent to re-render on realtime updates
-  useEffect(() => setTick((t) => t + 1), []);
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <main className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
-        <LegalContent key={tick} contentKey="terms" />
-      </main>
+    <div style={{ background: "#06060a", color: "#fff", minHeight: "100vh", fontFamily: '"Inter", sans-serif' }}>
+      <FloatingNav />
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "100px 64px 100px" }}>
+        <LegalContent contentKey="terms" />
+      </div>
       <SiteFooter />
     </div>
   );
