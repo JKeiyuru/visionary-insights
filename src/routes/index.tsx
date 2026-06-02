@@ -167,9 +167,13 @@ function SplinePlaceholder({
 function VideoPlaceholder({
   search,
   accent,
+  label,
+  hint,
 }: {
   search: string;
   accent: string;
+  label?: string;
+  hint?: string;
 }) {
   return (
     <div
