@@ -1,62 +1,198 @@
 import { Link } from "@tanstack/react-router";
-import { Eye } from "lucide-react";
-import { Marquee } from "./Marquee";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-border/40 bg-background/60">
-      <Marquee speed={55} reverse className="border-b border-border/40 py-3 text-sm">
-        <span className="font-display text-2xl">SOCCER</span>
-        <span className="text-muted-foreground">•</span>
-        <span className="font-display text-2xl text-accent">BASKETBALL</span>
-        <span className="text-muted-foreground">•</span>
-        <span className="font-display text-2xl">FORMULA 1</span>
-        <span className="text-muted-foreground">•</span>
-        <span className="font-display text-2xl text-warning">BASEBALL</span>
-        <span className="text-muted-foreground">•</span>
-        <span className="font-display text-2xl">TENNIS</span>
-        <span className="text-muted-foreground">•</span>
-        <span className="font-display text-2xl text-secondary">CRICKET</span>
-        <span className="text-muted-foreground">•</span>
-        <span className="font-display text-2xl">RUGBY</span>
-      </Marquee>
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">
-        <div className="md:col-span-2">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent grid place-items-center">
-              <Eye className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-display text-lg font-semibold">
-              Vision<span className="text-gradient">Play</span>
-            </span>
-          </Link>
-          <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-            AI-powered sports intelligence. Explainable forecasts across soccer, basketball, F1, baseball, tennis and more.
+    <footer
+      style={{
+        borderTop: "0.5px solid rgba(255,255,255,0.07)",
+        background: "#06060a",
+        color: "#fff",
+        fontFamily: '"Inter", ui-sans-serif, sans-serif',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "64px 64px 48px",
+          display: "grid",
+          gridTemplateColumns: "2fr 1fr 1fr 1fr",
+          gap: 48,
+        }}
+      >
+        {/* Brand */}
+        <div>
+          <div
+            style={{
+              fontFamily: '"Space Grotesk", sans-serif',
+              fontSize: 18,
+              fontWeight: 500,
+              letterSpacing: "-0.02em",
+              marginBottom: 14,
+            }}
+          >
+            Vision<span style={{ color: "rgba(255,255,255,0.3)" }}>Play</span>
+          </div>
+          <p
+            style={{
+              fontSize: 13,
+              color: "rgba(255,255,255,0.35)",
+              lineHeight: 1.65,
+              maxWidth: 280,
+              marginBottom: 20,
+            }}
+          >
+            AI-powered sports intelligence. Explainable forecasts across soccer,
+            basketball, F1, baseball, tennis and cricket.
           </p>
-          <p className="mt-4 text-xs text-muted-foreground">
-            VisionPlay is an analytics & entertainment platform. We are not a betting operator and do not accept wagers.
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", lineHeight: 1.6 }}>
+            VisionPlay is an analytics &amp; entertainment platform.
+            We are not a betting operator and do not accept wagers.
           </p>
         </div>
+
+        {/* Platform */}
         <div>
-          <div className="text-sm font-semibold mb-3">Platform</div>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/matches" className="hover:text-foreground">Matches</Link></li>
-            <li><Link to="/leaderboard" className="hover:text-foreground">Leaderboard</Link></li>
-            <li><Link to="/pricing" className="hover:text-foreground">Pricing</Link></li>
-            <li><Link to="/dashboard" className="hover:text-foreground">Dashboard</Link></li>
-          </ul>
+          <div
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.25)",
+              marginBottom: 16,
+            }}
+          >
+            Platform
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { to: "/matches", label: "Matches" },
+              { to: "/sports", label: "Sports" },
+              { to: "/leaderboard", label: "Leaderboard" },
+              { to: "/pricing", label: "Pricing" },
+              { to: "/dashboard", label: "Dashboard" },
+            ].map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                style={{
+                  fontSize: 13,
+                  color: "rgba(255,255,255,0.4)",
+                  textDecoration: "none",
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
         </div>
+
+        {/* Sports */}
         <div>
-          <div className="text-sm font-semibold mb-3">Legal</div>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/terms" className="hover:text-foreground">Terms & Conditions</Link></li>
-            <li><Link to="/privacy" className="hover:text-foreground">Privacy Policy</Link></li>
-            <li><a href="mailto:hello@visionplay.app" className="hover:text-foreground">Contact</a></li>
-          </ul>
+          <div
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.25)",
+              marginBottom: 16,
+            }}
+          >
+            Sports
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {["Soccer", "Formula 1", "Basketball", "Tennis", "Baseball", "Cricket"].map((s) => (
+              <Link
+                key={s}
+                to={`/sports/${s.toLowerCase().replace(" ", "-")}`}
+                style={{
+                  fontSize: 13,
+                  color: "rgba(255,255,255,0.4)",
+                  textDecoration: "none",
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
+              >
+                {s}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Legal */}
+        <div>
+          <div
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.25)",
+              marginBottom: 16,
+            }}
+          >
+            Legal
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { to: "/terms", label: "Terms & Conditions" },
+              { to: "/privacy", label: "Privacy Policy" },
+            ].map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                style={{
+                  fontSize: 13,
+                  color: "rgba(255,255,255,0.4)",
+                  textDecoration: "none",
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
+              >
+                {l.label}
+              </Link>
+            ))}
+            <a
+              href="mailto:hello@visionplay.app"
+              style={{
+                fontSize: 13,
+                color: "rgba(255,255,255,0.4)",
+                textDecoration: "none",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
+            >
+              Contact
+            </a>
+          </div>
         </div>
       </div>
-      <div className="border-t border-border/40 py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} VisionPlay. All rights reserved. 18+ only.
+
+      {/* Bottom bar */}
+      <div
+        style={{
+          borderTop: "0.5px solid rgba(255,255,255,0.06)",
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "20px 64px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>
+          © {new Date().getFullYear()} VisionPlay. All rights reserved. 18+ only.
+        </span>
+        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.15)" }}>
+          Not a betting operator · Analytics only
+        </span>
       </div>
     </footer>
   );
