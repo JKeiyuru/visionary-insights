@@ -1,7 +1,24 @@
+/**
+ * /sports — Sports hub page
+ *
+ * PLACEHOLDERS:
+ * ─────────────────────────────────────────────────────────────────────
+ * Each sport card has a [SPLINE-CARD] slot. When you have your Spline
+ * scenes ready, replace the gradient <div> inside each card with:
+ *
+ *   import Spline from "@splinetool/react-spline";
+ *   <Spline
+ *     scene="https://prod.spline.design/YOUR-SPORT-SCENE-ID/scene.splinecode"
+ *     style={{ position:"absolute", inset:0, width:"100%", height:"100%", pointerEvents:"none" }}
+ *   />
+ *
+ * Each sport needs its own Spline scene ID. Build/fork them one at a time
+ * at spline.design — start with soccer and formula1, they're most impactful.
+ * ─────────────────────────────────────────────────────────────────────
+ */
+
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { SiteHeader } from "@/components/SiteHeader";
+import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SPORTS_LIST } from "@/components/scenes/sportConfig";
 
@@ -9,7 +26,7 @@ export const Route = createFileRoute("/sports/")({
   head: () => ({
     meta: [
       { title: "Sports Universe — VisionPlay" },
-      { name: "description", content: "Step into immersive 3D experiences for every sport we cover." },
+      { name: "description", content: "Six sports. One intelligence platform. Step inside each one." },
     ],
   }),
   component: SportsHub,
@@ -17,53 +34,197 @@ export const Route = createFileRoute("/sports/")({
 
 function SportsHub() {
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 py-14">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="text-xs uppercase tracking-widest text-muted-foreground">Sports universe</div>
-          <h1 className="mt-3 font-display text-5xl sm:text-6xl font-semibold leading-[1.05]">
-            Pick a sport.<br />
-            <span className="text-gradient">Step inside it.</span>
-          </h1>
-          <p className="mt-4 max-w-xl text-muted-foreground">
-            Every sport has its own scene, its own physics, its own story. Scroll inside one and the data unfolds around you.
-          </p>
-        </motion.div>
+    <div style={{ background: "#06060a", color: "#fff", minHeight: "100vh", fontFamily: '"Inter", sans-serif' }}>
+      <FloatingNav />
 
-        <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {SPORTS_LIST.map((s, i) => (
-            <motion.div
-              key={s.slug}
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.5 }}
-              whileHover={{ y: -6 }}
-            >
-              <Link
-                to="/sports/$sport"
-                params={{ sport: s.slug }}
-                className="group relative block overflow-hidden rounded-3xl border border-border bg-card/60 backdrop-blur p-6 h-64"
-              >
-                <div className="absolute inset-0 opacity-30 group-hover:opacity-60 transition-opacity"
-                     style={{ background: `radial-gradient(circle at 70% 20%, ${s.primary}, transparent 60%), radial-gradient(circle at 20% 90%, ${s.accent}, transparent 55%)` }} />
-                <div className="relative flex h-full flex-col justify-between">
-                  <div className="text-6xl">{s.emoji}</div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{s.environment}</div>
-                    <h3 className="mt-1 font-display text-2xl font-semibold">{s.name}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{s.tagline}</p>
-                    <div className="mt-3 inline-flex items-center gap-1 text-sm font-medium" style={{ color: s.accent }}>
-                      Enter scene <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </main>
+      {/* ── HEADER ────────────────────────────────────────────────────── */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "100px 64px 56px" }}>
+        <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 14 }}>
+          Sports universe
+        </p>
+        <h1
+          style={{
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: "clamp(36px, 5vw, 68px)",
+            fontWeight: 300,
+            letterSpacing: "-0.035em",
+            lineHeight: 1.05,
+            marginBottom: 16,
+          }}
+        >
+          Six sports.
+          <br />
+          <span style={{ color: "rgba(255,255,255,0.35)" }}>One intelligence platform.</span>
+        </h1>
+        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.4)", maxWidth: 480, lineHeight: 1.65 }}>
+          Scroll inside any sport and the data unfolds around you — statistics, forecasts, and AI reasoning woven into a cinematic experience.
+        </p>
+      </div>
+
+      {/* ── SPORT GRID ────────────────────────────────────────────────── */}
+      <div
+        style={{
+          maxWidth: 1100,
+          margin: "0 auto",
+          padding: "0 64px 100px",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 1,
+        }}
+      >
+        {SPORTS_LIST.map((s, i) => (
+          <SportCard key={s.slug} sport={s} large={i === 0} />
+        ))}
+      </div>
+
       <SiteFooter />
     </div>
+  );
+}
+
+function SportCard({
+  sport: s,
+  large,
+}: {
+  sport: (typeof SPORTS_LIST)[0];
+  large?: boolean;
+}) {
+  return (
+    <Link
+      to="/sports/$sport"
+      params={{ sport: s.slug }}
+      style={{
+        display: "block",
+        position: "relative",
+        height: large ? 420 : 300,
+        overflow: "hidden",
+        border: "0.5px solid rgba(255,255,255,0.06)",
+        borderRadius: 12,
+        textDecoration: "none",
+        color: "#fff",
+        gridColumn: large ? "span 2" : "span 1",
+      }}
+      onMouseEnter={(e) => {
+        const overlay = e.currentTarget.querySelector(".sport-overlay") as HTMLElement | null;
+        if (overlay) overlay.style.opacity = "0.7";
+        const arrow = e.currentTarget.querySelector(".sport-arrow") as HTMLElement | null;
+        if (arrow) arrow.style.transform = "translateX(4px)";
+      }}
+      onMouseLeave={(e) => {
+        const overlay = e.currentTarget.querySelector(".sport-overlay") as HTMLElement | null;
+        if (overlay) overlay.style.opacity = "0.35";
+        const arrow = e.currentTarget.querySelector(".sport-arrow") as HTMLElement | null;
+        if (arrow) arrow.style.transform = "translateX(0)";
+      }}
+    >
+      {/*
+        [SPLINE-CARD] — Replace this gradient with a Spline scene:
+        <Spline
+          scene="https://prod.spline.design/YOUR-ID/scene.splinecode"
+          style={{ position:"absolute", inset:0, width:"100%", height:"100%", pointerEvents:"none" }}
+        />
+
+        Spline search terms per sport:
+          soccer       → "soccer ball field"
+          formula1     → "formula 1 car"
+          basketball   → "basketball court"
+          tennis       → "tennis racket ball"
+          baseball     → "baseball bat"
+          cricket      → "cricket bat ball"
+
+        While you build those, this gradient placeholder looks clean.
+      */}
+
+      {/* Gradient background (placeholder) */}
+      <div
+        className="sport-overlay"
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `radial-gradient(ellipse 80% 80% at 70% 30%, ${s.primary}40 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 20% 80%, ${s.accent}25 0%, transparent 55%)`,
+          opacity: 0.35,
+          transition: "opacity 0.4s ease",
+        }}
+      />
+
+      {/* Placeholder label */}
+      <div
+        style={{
+          position: "absolute",
+          top: 14,
+          right: 14,
+          background: "rgba(0,0,0,0.5)",
+          border: `0.5px solid ${s.accent}30`,
+          borderRadius: 7,
+          padding: "5px 9px",
+          backdropFilter: "blur(6px)",
+        }}
+      >
+        <div style={{ fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: s.accent, opacity: 0.7 }}>
+          3D placeholder
+        </div>
+      </div>
+
+      {/* Dark gradient overlay */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(to bottom, transparent 30%, rgba(6,6,10,0.85) 100%)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(to right, rgba(6,6,10,0.5) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* Content */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: large ? "32px 32px" : "22px 22px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10 }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: s.accent }} />
+          <span style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>
+            {s.environment}
+          </span>
+        </div>
+        <h2
+          style={{
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: large ? 32 : 22,
+            fontWeight: 400,
+            letterSpacing: "-0.025em",
+            marginBottom: 6,
+          }}
+        >
+          {s.name}
+        </h2>
+        <p
+          style={{
+            fontSize: 13,
+            color: "rgba(255,255,255,0.4)",
+            lineHeight: 1.5,
+            marginBottom: 14,
+            maxWidth: large ? 440 : 260,
+          }}
+        >
+          {s.tagline}
+        </p>
+        <div
+          className="sport-arrow"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 13,
+            color: s.accent,
+            transition: "transform 0.25s ease",
+          }}
+        >
+          Enter scene <span>→</span>
+        </div>
+      </div>
+    </Link>
   );
 }
