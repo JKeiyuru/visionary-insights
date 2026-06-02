@@ -1,261 +1,1302 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { ArrowRight, Brain, Activity, Trophy, Sparkles, Target, Crown, Award, Check, Zap, Shield, TrendingUp } from "lucide-react";
-import { SiteHeader } from "@/components/SiteHeader";
-import { SiteFooter } from "@/components/SiteFooter";
-import { Button } from "@/components/ui/button";
-import { HeroShowcase } from "@/components/HeroShowcase";
+/**
+ * VisionPlay — Cinematic Home Page
+ *
+ * PLACEHOLDERS IN THIS FILE:
+ * ─────────────────────────────────────────────────────────────────────────────
+ * [SPLINE-HERO]       Replace <SplinePlaceholder> with your Spline scene.
+ *                     Search spline.design community for:
+ *                       "soccer ball 3d" / "sports equipment"
+ *                     Then: npm install @splinetool/react-spline
+ *                     <Spline scene="https://prod.spline.design/YOUR-ID/scene.splinecode" />
+ *
+ * [VIDEO-HERO]        Optional: a 4-8 second looping stadium atmosphere video
+ *                     works great as the background behind text (no 3D needed).
+ *                     Source: Pexels.com → search "football stadium night" or "racing circuit"
+ *                     → free for commercial use. Download 1080p, host in /public/videos/
+ *                     Uncomment the <video> block below labeled [VIDEO-HERO].
+ *
+ * [VIDEO-FEATURE]     A short product walkthrough video showing the AI predictions UI.
+ *                     Record your own screen with Loom or ScreenStudio.
+ *                     Drop at /public/videos/product-demo.mp4
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { FloatingNav } from "@/components/FloatingNav";
+import { SiteFooter } from "@/components/SiteFooter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "VisionPlay — AI Sports Intelligence & Forecasting" },
-      { name: "description", content: "Explainable AI predictions across soccer, basketball, F1, baseball and tennis. Join the smartest sports analytics community." },
-      { property: "og:title", content: "VisionPlay — AI Sports Intelligence" },
-      { property: "og:description", content: "Explainable forecasts. Live momentum. Reputation-driven community." },
+      { title: "VisionPlay — AI Sports Intelligence" },
+      {
+        name: "description",
+        content:
+          "See the match before it happens. AI-powered explainable predictions across soccer, basketball, F1 and more.",
+      },
     ],
   }),
-  component: Landing,
+  component: Home,
 });
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
+// ── Sport chapters ────────────────────────────────────────────────────────────
+const CHAPTERS = [
+  {
+    sport: "Soccer",
+    splineSearch: "soccer ball stadium",
+    videoSearch: "football stadium night crowd pexels",
+    headline: "See the goal\nbefore it happens.",
+    body: "Expected goals, momentum shifts, weather, form — synthesised into one confident prediction, explained step by step.",
+    stat: { value: "71.4%", label: "Average accuracy" },
+    accent: "#34d399",
+    // placeholder gradient until Spline/video is connected
+    bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #0d3320 0%, #06060a 70%)",
+  },
+  {
+    sport: "Formula 1",
+    splineSearch: "formula 1 car racing",
+    videoSearch: "formula 1 race track night pexels",
+    headline: "Every lap,\nevery strategy call.",
+    body: "1,000 telemetry channels. Tyre degradation, fuel load, pit window probability. We model the race before lights out.",
+    stat: { value: "1,024", label: "Strategy scenarios per race" },
+    accent: "#f87171",
+    bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #3d0d0d 0%, #06060a 70%)",
+  },
+  {
+    sport: "Basketball",
+    splineSearch: "basketball court 3d",
+    videoSearch: "basketball arena court lights pexels",
+    headline: "Every possession.\nLive.",
+    body: "Shot quality, defensive rotation, pace. Win probability updated after every basket — not just at halftime.",
+    stat: { value: "30s", label: "Live update interval" },
+    accent: "#fb923c",
+    bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #3d1e0d 0%, #06060a 70%)",
+  },
+  {
+    sport: "Tennis",
+    splineSearch: "tennis ball racket 3d",
+    videoSearch: "tennis court aerial overhead pexels",
+    headline: "Surface.\nSpin. Stamina.",
+    body: "Grass, clay, hard — each surface reshapes every forecast. We track the variables broadcasters miss.",
+    stat: { value: "120+", label: "Tournaments modelled" },
+    accent: "#a3e635",
+    bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #1a2e0a 0%, #06060a 70%)",
+  },
+  {
+    sport: "Baseball",
+    splineSearch: "baseball bat ball stadium",
+    videoSearch: "baseball stadium night lights pexels",
+    headline: "Every pitch\nis probability.",
+    body: "Spin rate, exit velocity, launch angle. Statcast-aware forecasts updated pitch by pitch, batter by batter.",
+    stat: { value: "300+", label: "Pitches analysed per game" },
+    accent: "#60a5fa",
+    bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #0d1a3d 0%, #06060a 70%)",
+  },
+  {
+    sport: "Cricket",
+    splineSearch: "cricket ball bat pitch",
+    videoSearch: "cricket stadium match day aerial pexels",
+    headline: "DLS. Dew.\nPitch wear.",
+    body: "Test, ODI, T20. Every variable that determines an innings, modelled across every format and condition.",
+    stat: { value: "3", label: "Formats. Every match covered." },
+    accent: "#fbbf24",
+    bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #2e220d 0%, #06060a 70%)",
+  },
+];
 
-function Landing() {
+// ── Placeholder components ────────────────────────────────────────────────────
+
+/** Drop-in placeholder for a Spline 3D scene */
+function SplinePlaceholder({
+  search,
+  accent,
+  bg,
+}: {
+  search: string;
+  accent: string;
+  bg: string;
+}) {
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        background: bg,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+        justifyContent: "flex-start",
+        padding: "72px 48px",
+        transition: "background 0.9s ease",
+      }}
+    >
+      {/* Instructional overlay — remove when you add real 3D */}
+      <div
+        style={{
+          background: "rgba(255,255,255,0.04)",
+          border: "0.5px solid rgba(255,255,255,0.1)",
+          borderRadius: 12,
+          padding: "14px 18px",
+          maxWidth: 280,
+          textAlign: "right",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 10,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: accent,
+            marginBottom: 6,
+          }}
+        >
+          3D Placeholder
+        </div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>
+          Search spline.design for{" "}
+          <span style={{ color: "rgba(255,255,255,0.7)" }}>"{search}"</span>
+          {" → "}fork a scene → publish → paste URL here
+        </div>
+      </div>
+    </div>
+  );
+}
 
-      {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-12 pb-16 lg:pt-20 lg:pb-24 grid lg:grid-cols-2 gap-10 items-center">
-          <motion.div initial="hidden" animate="show" variants={fadeUp}>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs">
-              <Sparkles className="h-3.5 w-3.5 text-accent" /> Powered by explainable AI
-            </div>
-            <h1 className="mt-5 font-display text-5xl sm:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight">
-              See the game <span className="text-gradient">before</span> it happens.
-            </h1>
-            <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-              VisionPlay turns live data, form, weather and momentum into transparent forecasts you can actually trust — across soccer, basketball, F1, baseball, tennis and more.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="/signup">
-                <Button size="lg" className="bg-gradient-to-r from-primary to-accent text-white border-0 shadow-lg">
-                  Start free <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to="/matches">
-                <Button size="lg" variant="outline">Explore matches</Button>
-              </Link>
-            </div>
-            <div className="mt-8 flex gap-6 text-sm text-muted-foreground">
-              <div><span className="text-foreground font-semibold">72%</span> avg accuracy</div>
-              <div><span className="text-foreground font-semibold">14k+</span> analysts</div>
-              <div><span className="text-foreground font-semibold">6</span> sports</div>
-            </div>
-          </motion.div>
+/** Drop-in placeholder for a background video */
+function VideoPlaceholder({
+  search,
+  accent,
+}: {
+  search: string;
+  accent: string;
+}) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        background: "rgba(255,255,255,0.02)",
+        border: "0.5px dashed rgba(255,255,255,0.08)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div style={{ textAlign: "center", maxWidth: 320, padding: 24 }}>
+        <div
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            border: `1.5px solid ${accent}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 16px",
+          }}
+        >
+          <div
+            style={{
+              width: 0,
+              height: 0,
+              borderTop: "8px solid transparent",
+              borderBottom: "8px solid transparent",
+              borderLeft: `14px solid ${accent}`,
+              marginLeft: 3,
+            }}
+          />
+        </div>
+        <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 6 }}>Video placeholder</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", lineHeight: 1.6 }}>
+          Search pexels.com for{" "}
+          <span style={{ color: "rgba(255,255,255,0.6)" }}>"{search}"</span>
+          <br />
+          Download 1080p MP4 → /public/videos/
+          <br />
+          Uncomment the &lt;video&gt; block in index.tsx
+        </div>
+      </div>
+    </div>
+  );
+}
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative h-[460px] sm:h-[560px] rounded-3xl glass overflow-hidden"
+// ── Home component ────────────────────────────────────────────────────────────
+function Home() {
+  const [activeChapter, setActiveChapter] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chapter = CHAPTERS[activeChapter];
+
+  useEffect(() => {
+    function onScroll() {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const totalHeight = containerRef.current.offsetHeight - window.innerHeight;
+      const progress = Math.max(0, Math.min(1, -rect.top / totalHeight));
+      setScrollProgress(progress);
+      const idx = Math.min(CHAPTERS.length - 1, Math.floor(progress * CHAPTERS.length));
+      setActiveChapter(idx);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <div
+      style={{
+        background: "#06060a",
+        color: "#fff",
+        minHeight: "100vh",
+        fontFamily: '"Inter", ui-sans-serif, sans-serif',
+      }}
+    >
+      <FloatingNav />
+
+      {/* ── CINEMATIC SCROLL SECTION ─────────────────────────────────────── */}
+      <div
+        ref={containerRef}
+        style={{ height: `${CHAPTERS.length * 100}vh`, position: "relative" }}
+      >
+        {/* Sticky canvas */}
+        <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden" }}>
+
+          {/* ── BACKGROUND LAYER (3D / Video) ──────────────────────────── */}
+          {CHAPTERS.map((c, i) => (
+            <div
+              key={c.sport}
+              style={{
+                position: "absolute",
+                inset: 0,
+                opacity: i === activeChapter ? 1 : 0,
+                transition: "opacity 1s cubic-bezier(0.25,0.1,0.25,1)",
+                pointerEvents: i === activeChapter ? "auto" : "none",
+              }}
+            >
+              {/*
+               * ──────────────────────────────────────────────────────────
+               * OPTION A: Replace SplinePlaceholder with your Spline scene:
+               *
+               *   import Spline from "@splinetool/react-spline";
+               *   <Spline
+               *     scene="https://prod.spline.design/YOUR-SCENE-ID/scene.splinecode"
+               *     style={{ width: "100%", height: "100%" }}
+               *   />
+               *
+               * OPTION B: Replace with a background video:
+               *
+               *   <video
+               *     src={`/videos/${c.sport.toLowerCase()}.mp4`}
+               *     autoPlay muted loop playsInline
+               *     style={{ width:"100%", height:"100%", objectFit:"cover" }}
+               *   />
+               *
+               * For now: gradient placeholder + instruction card
+               * ──────────────────────────────────────────────────────────
+               */}
+              <SplinePlaceholder search={c.splineSearch} accent={c.accent} bg={c.bg} />
+
+              {/* Cinematic overlays — keep these regardless of 3D/video */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "linear-gradient(to bottom, rgba(6,6,10,0.05) 0%, rgba(6,6,10,0.4) 55%, rgba(6,6,10,0.95) 100%)",
+                  pointerEvents: "none",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "linear-gradient(to right, rgba(6,6,10,0.8) 0%, rgba(6,6,10,0.2) 50%, transparent 100%)",
+                  pointerEvents: "none",
+                }}
+              />
+            </div>
+          ))}
+
+          {/* ── CHAPTER TEXT ─────────────────────────────────────────────── */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 100,
+              left: 0,
+              right: 0,
+              padding: "0 64px",
+              maxWidth: 700,
+              pointerEvents: "none",
+            }}
           >
-            <HeroShowcase className="absolute inset-0" sports={["soccer", "formula1", "basketball"]} />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
-            <div className="pointer-events-none absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-success live-dot" />Live 3D preview</span>
-              <span>Drag-free · auto-orbit</span>
+            {/* Sport pill */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                marginBottom: 22,
+              }}
+            >
+              <div
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: chapter.accent,
+                  transition: "background 0.6s ease",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: chapter.accent,
+                  transition: "color 0.6s ease",
+                }}
+              >
+                {chapter.sport}
+              </span>
             </div>
 
-          </motion.div>
+            {/* Headline */}
+            <h1
+              style={{
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontSize: "clamp(38px, 5.5vw, 76px)",
+                fontWeight: 300,
+                lineHeight: 1.05,
+                letterSpacing: "-0.035em",
+                whiteSpace: "pre-line",
+                color: "#fff",
+                marginBottom: 22,
+              }}
+            >
+              {chapter.headline}
+            </h1>
+
+            {/* Body */}
+            <p
+              style={{
+                fontSize: 17,
+                lineHeight: 1.65,
+                color: "rgba(255,255,255,0.55)",
+                maxWidth: 480,
+                marginBottom: 30,
+              }}
+            >
+              {chapter.body}
+            </p>
+
+            {/* Stat */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "baseline",
+                gap: 12,
+                paddingTop: 18,
+                borderTop: "0.5px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontSize: 36,
+                  fontWeight: 500,
+                  letterSpacing: "-0.04em",
+                  color: chapter.accent,
+                  transition: "color 0.6s ease",
+                }}
+              >
+                {chapter.stat.value}
+              </span>
+              <span
+                style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", letterSpacing: "0.04em" }}
+              >
+                {chapter.stat.label}
+              </span>
+            </div>
+          </div>
+
+          {/* ── CHAPTER RAIL (right side) ─────────────────────────────── */}
+          <div
+            style={{
+              position: "absolute",
+              right: 36,
+              top: "50%",
+              transform: "translateY(-50%)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              pointerEvents: "none",
+            }}
+          >
+            {CHAPTERS.map((c, i) => (
+              <div
+                key={c.sport}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  gap: 8,
+                  opacity: i === activeChapter ? 1 : 0.25,
+                  transition: "opacity 0.4s ease",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: i === activeChapter ? "#fff" : "rgba(255,255,255,0.4)",
+                  }}
+                >
+                  {c.sport}
+                </span>
+                <div
+                  style={{
+                    height: 1,
+                    width: i === activeChapter ? 28 : 10,
+                    background: i === activeChapter ? chapter.accent : "rgba(255,255,255,0.2)",
+                    transition: "all 0.4s ease",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* ── SCROLL PROGRESS BAR ─────────────────────────────────────── */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 1,
+              background: "rgba(255,255,255,0.06)",
+              pointerEvents: "none",
+            }}
+          >
+            <div
+              style={{
+                height: "100%",
+                width: `${scrollProgress * 100}%`,
+                background: chapter.accent,
+                transition: "width 0.1s linear, background 0.6s ease",
+              }}
+            />
+          </div>
+
+          {/* ── SCROLL CTA (first chapter only) ─────────────────────────── */}
+          {activeChapter === 0 && scrollProgress < 0.03 && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: 32,
+                left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+                pointerEvents: "none",
+                animation: "bob 2s ease-in-out infinite",
+              }}
+            >
+              <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+                Scroll
+              </span>
+              <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+                <path d="M8 0v16M2 10l6 6 6-6" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+              </svg>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── INTRO CTA STRIP ──────────────────────────────────────────────── */}
+      <div
+        style={{
+          borderTop: "0.5px solid rgba(255,255,255,0.06)",
+          borderBottom: "0.5px solid rgba(255,255,255,0.06)",
+          padding: "32px 64px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 24,
+          flexWrap: "wrap",
+        }}
+      >
+        <p style={{ fontSize: 15, color: "rgba(255,255,255,0.45)", maxWidth: 500 }}>
+          Explainable AI predictions across 6 sports. Free to start.
+        </p>
+        <Link
+          to="/signup"
+          style={{
+            display: "inline-block",
+            background: "#fff",
+            color: "#000",
+            textDecoration: "none",
+            padding: "11px 26px",
+            borderRadius: 100,
+            fontSize: 14,
+            fontWeight: 500,
+            flexShrink: 0,
+          }}
+        >
+          Start free →
+        </Link>
+      </div>
+
+      {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
+      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 64px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 100,
+            alignItems: "start",
+          }}
+        >
+          <div>
+            <p
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "rgba(255,255,255,0.3)",
+                marginBottom: 20,
+              }}
+            >
+              How it works
+            </p>
+            <h2
+              style={{
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontSize: "clamp(28px, 3.2vw, 48px)",
+                fontWeight: 300,
+                letterSpacing: "-0.03em",
+                lineHeight: 1.1,
+                marginBottom: 22,
+              }}
+            >
+              No black boxes.
+              <br />
+              Every prediction
+              <br />
+              explains itself.
+            </h2>
+            <p
+              style={{
+                fontSize: 16,
+                lineHeight: 1.7,
+                color: "rgba(255,255,255,0.45)",
+                marginBottom: 36,
+                maxWidth: 380,
+              }}
+            >
+              Form, injuries, weather, referee tendencies, expected goals — laid out in plain language. You see exactly why we made the call.
+            </p>
+            <Link
+              to="/matches"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 14,
+                color: "#fff",
+                textDecoration: "none",
+                borderBottom: "0.5px solid rgba(255,255,255,0.25)",
+                paddingBottom: 3,
+              }}
+            >
+              See live predictions <span>→</span>
+            </Link>
+          </div>
+
+          {/* Product video placeholder */}
+          <div>
+            {/*
+             * [VIDEO-FEATURE] — Product UI walkthrough video
+             * Record: Screen-record the matches page with a few predictions open.
+             * Tools: Loom (free), ScreenStudio (Mac), or OBS
+             * Format: MP4, 1200×800, 15-30 seconds, looping
+             * Save to: /public/videos/product-demo.mp4
+             *
+             * When ready, replace this VideoPlaceholder with:
+             *   <video
+             *     src="/videos/product-demo.mp4"
+             *     autoPlay muted loop playsInline
+             *     style={{ width:"100%", borderRadius:16, border:"0.5px solid rgba(255,255,255,0.08)" }}
+             *   />
+             */}
+            <div
+              style={{
+                width: "100%",
+                aspectRatio: "16/10",
+                borderRadius: 16,
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                overflow: "hidden",
+                position: "relative",
+              }}
+            >
+              <VideoPlaceholder
+                search="football stadium atmosphere night"
+                accent="#34d399"
+                label="Product demo video"
+                hint="Screen-record the matches page with predictions open. Save as /public/videos/product-demo.mp4 (15–30s loop)."
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Feature list */}
+        <div
+          style={{
+            marginTop: 80,
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            borderTop: "0.5px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          {[
+            { n: "01", title: "Explainable AI", desc: "Every forecast links to the data that drove it. No magic numbers." },
+            { n: "02", title: "Live momentum", desc: "Probability shifts as matches unfold. 30-second refresh rate." },
+            { n: "03", title: "Reputation system", desc: "Forecast accurately and climb from Bronze to Oracle." },
+            { n: "04", title: "6 sports", desc: "Soccer, F1, basketball, tennis, baseball, cricket." },
+          ].map((f) => (
+            <div
+              key={f.n}
+              style={{
+                padding: "28px 0",
+                paddingRight: 24,
+                borderRight: "0.5px solid rgba(255,255,255,0.06)",
+                paddingLeft: f.n === "01" ? 0 : 24,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "rgba(255,255,255,0.2)",
+                  marginBottom: 16,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {f.n}
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 500, letterSpacing: "-0.01em", marginBottom: 8 }}>
+                {f.title}
+              </div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.55 }}>
+                {f.desc}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* SPORTS UNIVERSE PORTAL */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-20">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex items-end justify-between gap-4 flex-wrap">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">Sports universe</div>
-            <h2 className="mt-2 font-display text-4xl sm:text-5xl font-semibold">Step inside a sport.</h2>
-            <p className="mt-2 text-muted-foreground max-w-xl">Each sport is its own cinematic 3D scene. Scroll inside one and the data unfolds around you.</p>
+      {/* ── LIVE MATCHES STRIP ───────────────────────────────────────────── */}
+      <section
+        style={{
+          borderTop: "0.5px solid rgba(255,255,255,0.06)",
+          borderBottom: "0.5px solid rgba(255,255,255,0.06)",
+          padding: "80px 0",
+        }}
+      >
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 64px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              marginBottom: 40,
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontSize: "clamp(24px, 2.8vw, 40px)",
+                fontWeight: 300,
+                letterSpacing: "-0.03em",
+              }}
+            >
+              Live forecasts.
+            </h2>
+            <Link
+              to="/matches"
+              style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", textDecoration: "none" }}
+            >
+              All matches →
+            </Link>
           </div>
-          <Link to="/sports" className="text-sm font-medium text-accent inline-flex items-center gap-1 hover:gap-2 transition-all">
-            See all sports <ArrowRight className="h-4 w-4" />
-          </Link>
-        </motion.div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              border: "0.5px solid rgba(255,255,255,0.06)",
+              borderRadius: 16,
+              overflow: "hidden",
+            }}
+          >
+            {[
+              { home: "Arsenal", away: "Chelsea", sport: "soccer", homeP: 58, drawP: 22, awayP: 20, conf: 78, verdict: "Arsenal to win", live: true, accent: "#34d399" },
+              { home: "Lakers", away: "Celtics", sport: "basketball", homeP: 44, drawP: 0, awayP: 56, conf: 65, verdict: "Celtics to win", live: false, accent: "#fb923c" },
+              { home: "Verstappen", away: "Hamilton", sport: "f1", homeP: 67, drawP: 0, awayP: 33, conf: 71, verdict: "Verstappen pole → win", live: false, accent: "#f87171" },
+            ].map((m, i) => (
+              <MatchCard key={m.home} {...m} last={i === 2} />
+            ))}
+          </div>
+        </div>
+      </section>
 
-        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { slug: "soccer", name: "Soccer", emoji: "⚽", p: "#22c55e", a: "#eab308" },
-            { slug: "formula1", name: "Formula 1", emoji: "🏎️", p: "#ef4444", a: "#f59e0b" },
-            { slug: "basketball", name: "Basketball", emoji: "🏀", p: "#f97316", a: "#a855f7" },
-            { slug: "tennis", name: "Tennis", emoji: "🎾", p: "#84cc16", a: "#06b6d4" },
-            { slug: "boxing", name: "Boxing", emoji: "🥊", p: "#dc2626", a: "#fbbf24" },
-            { slug: "cricket", name: "Cricket", emoji: "🏏", p: "#16a34a", a: "#f59e0b" },
-            { slug: "american-football", name: "Am. Football", emoji: "🏈", p: "#7c3aed", a: "#22c55e" },
-            { slug: "baseball", name: "Baseball", emoji: "⚾", p: "#0ea5e9", a: "#f43f5e" },
-          ].map((s, i) => (
-            <motion.div key={s.slug} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }} whileHover={{ y: -6 }}>
-              <Link to="/sports/$sport" params={{ sport: s.slug }} className="group relative block h-44 overflow-hidden rounded-2xl border border-border bg-card/60 p-5">
-                <div className="absolute inset-0 opacity-25 group-hover:opacity-60 transition-opacity"
-                     style={{ background: `radial-gradient(circle at 70% 20%, ${s.p}, transparent 60%), radial-gradient(circle at 20% 90%, ${s.a}, transparent 55%)` }} />
-                <div className="relative flex h-full flex-col justify-between">
-                  <div className="text-4xl">{s.emoji}</div>
+      {/* ── SPORTS GRID ──────────────────────────────────────────────────── */}
+      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 64px" }}>
+        <p
+          style={{
+            fontSize: 11,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.3)",
+            marginBottom: 16,
+          }}
+        >
+          Coverage
+        </p>
+        <h2
+          style={{
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: "clamp(28px, 3.2vw, 48px)",
+            fontWeight: 300,
+            letterSpacing: "-0.03em",
+            marginBottom: 48,
+          }}
+        >
+          Six sports.
+          <br />
+          One intelligence platform.
+        </h2>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 1,
+            background: "rgba(255,255,255,0.04)",
+            borderRadius: 16,
+            overflow: "hidden",
+            border: "0.5px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          {CHAPTERS.map((c) => (
+            <Link
+              key={c.sport}
+              to={`/sports/${c.sport.toLowerCase().replace(" ", "-")}`}
+              style={{
+                display: "block",
+                padding: "36px 28px",
+                background: "#06060a",
+                textDecoration: "none",
+                transition: "background 0.25s ease",
+                borderBottom: "0.5px solid rgba(255,255,255,0.04)",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#06060a")}
+            >
+              <div
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: c.accent,
+                  marginBottom: 20,
+                }}
+              />
+              <div
+                style={{
+                  fontSize: 17,
+                  fontWeight: 500,
+                  letterSpacing: "-0.01em",
+                  color: "#fff",
+                  marginBottom: 6,
+                }}
+              >
+                {c.sport}
+              </div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", lineHeight: 1.5 }}>
+                {c.stat.value} · {c.stat.label}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ── TIERS ────────────────────────────────────────────────────────── */}
+      <section
+        style={{
+          borderTop: "0.5px solid rgba(255,255,255,0.06)",
+          padding: "120px 64px",
+        }}
+      >
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 100,
+              alignItems: "start",
+            }}
+          >
+            <div>
+              <p
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.3)",
+                  marginBottom: 20,
+                }}
+              >
+                Reputation
+              </p>
+              <h2
+                style={{
+                  fontFamily: '"Space Grotesk", sans-serif',
+                  fontSize: "clamp(28px, 3.2vw, 48px)",
+                  fontWeight: 300,
+                  letterSpacing: "-0.03em",
+                  lineHeight: 1.1,
+                  marginBottom: 22,
+                }}
+              >
+                Earn your place.
+                <br />
+                Then earn revenue.
+              </h2>
+              <p
+                style={{
+                  fontSize: 16,
+                  lineHeight: 1.7,
+                  color: "rgba(255,255,255,0.4)",
+                  maxWidth: 360,
+                  marginBottom: 36,
+                }}
+              >
+                Forecast accurately and unlock higher tiers. Oracle analysts receive a share of platform revenue. Your record is your rank.
+              </p>
+              <Link
+                to="/leaderboard"
+                style={{
+                  fontSize: 14,
+                  color: "#fff",
+                  textDecoration: "none",
+                  borderBottom: "0.5px solid rgba(255,255,255,0.25)",
+                  paddingBottom: 3,
+                }}
+              >
+                View leaderboard →
+              </Link>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {[
+                { name: "Bronze", req: "Open to everyone", perk: "5 free picks per day", color: "#b45309" },
+                { name: "Silver", req: "55% accuracy over 50 forecasts", perk: "Unlimited picks + email alerts", color: "#94a3b8" },
+                { name: "Gold", req: "65% accuracy over 100 forecasts", perk: "Premium leagues + live momentum", color: "#eab308" },
+                { name: "Oracle", req: "75% accuracy over 200 forecasts", perk: "Revenue share + private discord", color: "#a78bfa" },
+              ].map((t, i) => (
+                <div
+                  key={t.name}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "120px 1fr",
+                    gap: 24,
+                    padding: "20px 0",
+                    borderBottom: i < 3 ? "0.5px solid rgba(255,255,255,0.06)" : "none",
+                    alignItems: "start",
+                  }}
+                >
                   <div>
-                    <h3 className="font-display text-lg font-semibold">{s.name}</h3>
-                    <div className="text-xs inline-flex items-center gap-1 mt-1" style={{ color: s.a }}>
-                      Enter scene <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 500,
+                        color: t.color,
+                        letterSpacing: "-0.01em",
+                      }}
+                    >
+                      {t.name}
                     </div>
                   </div>
+                  <div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 3 }}>
+                      {t.req}
+                    </div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>{t.perk}</div>
+                  </div>
                 </div>
-              </Link>
-            </motion.div>
-          ))}
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-
-      {/* FEATURES */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-        <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} className="text-center max-w-2xl mx-auto">
-          <h2 className="font-display text-4xl font-semibold">Built for the modern analyst</h2>
-          <p className="mt-3 text-muted-foreground">Four pillars that make VisionPlay unlike anything you've used before.</p>
-        </motion.div>
-        <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {[
-            { icon: Brain, t: "Explainable AI", d: "Every prediction shows xG, form, injuries and weather. No black boxes." },
-            { icon: Activity, t: "Live momentum", d: "Real-time probability shifts as matches unfold. Stay one step ahead." },
-            { icon: Trophy, t: "Reputation system", d: "Climb from Bronze to Oracle as your forecasts prove accurate." },
-            { icon: Shield, t: "Responsible by design", d: "Analytics first. We're not a betting operator." },
-          ].map((f, i) => (
-            <motion.div
-              key={f.t}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              whileHover={{ y: -6 }}
-              className="glass rounded-2xl p-5"
-            >
-              <f.icon className="h-6 w-6 text-accent" />
-              <h3 className="mt-4 font-display text-lg font-semibold">{f.t}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{f.d}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* TIERS */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-        <div className="text-center max-w-2xl mx-auto">
-          <h2 className="font-display text-4xl font-semibold">Earn your reputation</h2>
-          <p className="mt-3 text-muted-foreground">Forecast accurately and climb the ranks. Top analysts unlock revenue share.</p>
-        </div>
-        <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { icon: Target, name: "Bronze", min: "0%", color: "from-amber-700 to-amber-500" },
-            { icon: Award, name: "Silver", min: "55%", color: "from-slate-400 to-slate-200" },
-            { icon: Trophy, name: "Gold", min: "65%", color: "from-yellow-500 to-yellow-300" },
-            { icon: Crown, name: "Oracle", min: "75%", color: "from-violet-500 to-fuchsia-400" },
-          ].map((t, i) => (
-            <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="glass rounded-2xl p-6 text-center"
-            >
-              <div className={`mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br ${t.color} grid place-items-center shadow-lg`}>
-                <t.icon className="h-7 w-7 text-background" />
-              </div>
-              <h3 className="mt-4 font-display text-xl font-semibold">{t.name}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{t.min} accuracy</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="pricing" className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-        <div className="text-center max-w-2xl mx-auto">
-          <h2 className="font-display text-4xl font-semibold">Simple, fair pricing</h2>
-          <p className="mt-3 text-muted-foreground">Pay in KES via M-Pesa or card. Cancel anytime.</p>
-        </div>
-        <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { name: "Free", price: "KES 0", period: "forever", features: ["5 picks / day", "Basic insights", "Community access"] },
-            { name: "Weekly", price: "KES 149", period: "/week", features: ["Unlimited picks", "Live momentum", "Email alerts"] },
-            { name: "Monthly", price: "KES 399", period: "/month", featured: true, features: ["Everything in Weekly", "Premium leagues", "Priority support", "Revenue share access"] },
-            { name: "Elite Season", price: "KES 2,999", period: "/season", features: ["All sports unlocked", "1-on-1 analyst time", "Private discord", "Early features"] },
-          ].map((p, i) => (
-            <motion.div
-              key={p.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              className={`relative rounded-2xl p-6 ${p.featured ? "bg-gradient-to-b from-primary/15 to-accent/10 border-2 border-primary glow-ring" : "glass"}`}
-            >
-              {p.featured && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-accent px-3 py-1 text-xs font-semibold text-white">
-                  Most popular
-                </div>
-              )}
-              <h3 className="font-display text-xl font-semibold">{p.name}</h3>
-              <div className="mt-3 flex items-baseline gap-1">
-                <span className="font-display text-3xl font-bold">{p.price}</span>
-                <span className="text-sm text-muted-foreground">{p.period}</span>
-              </div>
-              <ul className="mt-5 space-y-2">
-                {p.features.map((f) => (
-                  <li key={f} className="flex gap-2 text-sm">
-                    <Check className="h-4 w-4 text-accent shrink-0 mt-0.5" /> {f}
-                  </li>
-                ))}
-              </ul>
-              <Link to="/signup" className="block mt-6">
-                <Button className={`w-full ${p.featured ? "bg-gradient-to-r from-primary to-accent text-white border-0" : ""}`} variant={p.featured ? "default" : "outline"}>
-                  Get started
-                </Button>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/15 border border-border p-10 lg:p-16 text-center"
-        >
-          <Zap className="mx-auto h-10 w-10 text-warning" />
-          <h2 className="mt-4 font-display text-4xl sm:text-5xl font-semibold">Join VisionPlay today</h2>
-          <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-            Smarter sports, transparent forecasts, a community that rewards accuracy. Start free in 30 seconds.
+      {/* ── PRICING PREVIEW ──────────────────────────────────────────────── */}
+      <section
+        style={{
+          borderTop: "0.5px solid rgba(255,255,255,0.06)",
+          padding: "120px 64px",
+        }}
+      >
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <p
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.3)",
+              marginBottom: 16,
+            }}
+          >
+            Pricing
           </p>
-          <div className="mt-6 flex justify-center gap-3">
-            <Link to="/signup">
-              <Button size="lg" className="bg-gradient-to-r from-primary to-accent text-white border-0">
-                Create your account <TrendingUp className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link to="/matches">
-              <Button size="lg" variant="outline">Browse matches</Button>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              marginBottom: 48,
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: '"Space Grotesk", sans-serif',
+                fontSize: "clamp(28px, 3.2vw, 48px)",
+                fontWeight: 300,
+                letterSpacing: "-0.03em",
+              }}
+            >
+              Start free.
+              <br />
+              Scale when you're ready.
+            </h2>
+            <Link
+              to="/pricing"
+              style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", textDecoration: "none", flexShrink: 0, marginLeft: 24 }}
+            >
+              All plans →
             </Link>
           </div>
-        </motion.div>
+          <div
+            style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1 }}
+          >
+            {[
+              { name: "Free", price: "KES 0", period: "forever", features: ["5 picks / day", "Basic insights", "Community access"], accent: "rgba(255,255,255,0.2)" },
+              { name: "Weekly", price: "KES 149", period: "/week", features: ["Unlimited picks", "Live momentum", "SMS alerts"], accent: "rgba(255,255,255,0.3)" },
+              { name: "Monthly", price: "KES 399", period: "/month", features: ["Premium leagues", "Priority support", "Revenue share access"], accent: "#60a5fa", featured: true },
+              { name: "Elite Season", price: "KES 2,999", period: "/season", features: ["All sports unlocked", "1-on-1 analyst time", "Private discord"], accent: "#a78bfa" },
+            ].map((p) => (
+              <div
+                key={p.name}
+                style={{
+                  padding: "28px 24px",
+                  background: p.featured ? "rgba(96,165,250,0.04)" : "rgba(255,255,255,0.01)",
+                  border: p.featured ? "0.5px solid rgba(96,165,250,0.2)" : "0.5px solid rgba(255,255,255,0.05)",
+                  borderRadius: 12,
+                  position: "relative",
+                }}
+              >
+                {p.featured && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: -10,
+                      left: 20,
+                      background: "#60a5fa",
+                      color: "#000",
+                      fontSize: 10,
+                      fontWeight: 500,
+                      padding: "3px 10px",
+                      borderRadius: 100,
+                      letterSpacing: "0.06em",
+                    }}
+                  >
+                    Most popular
+                  </div>
+                )}
+                <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 14, color: p.accent }}>{p.name}</div>
+                <div style={{ marginBottom: 20 }}>
+                  <span
+                    style={{
+                      fontFamily: '"Space Grotesk", sans-serif',
+                      fontSize: 26,
+                      fontWeight: 400,
+                      letterSpacing: "-0.03em",
+                    }}
+                  >
+                    {p.price}
+                  </span>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginLeft: 4 }}>
+                    {p.period}
+                  </span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+                  {p.features.map((f) => (
+                    <div
+                      key={f}
+                      style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", display: "flex", gap: 8, alignItems: "flex-start" }}
+                    >
+                      <span style={{ color: p.accent, flexShrink: 0 }}>—</span>
+                      {f}
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  to="/signup"
+                  style={{
+                    display: "block",
+                    textAlign: "center",
+                    fontSize: 13,
+                    textDecoration: "none",
+                    padding: "10px 0",
+                    borderRadius: 8,
+                    background: p.featured ? "#60a5fa" : "transparent",
+                    color: p.featured ? "#000" : "rgba(255,255,255,0.45)",
+                    border: p.featured ? "none" : "0.5px solid rgba(255,255,255,0.12)",
+                    transition: "opacity 0.2s",
+                  }}
+                >
+                  {p.name === "Free" ? "Start free" : `Choose ${p.name}`}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
+      <section
+        style={{
+          textAlign: "center",
+          padding: "160px 64px",
+          borderTop: "0.5px solid rgba(255,255,255,0.06)",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Background glow */}
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%,-50%)",
+            width: 600,
+            height: 400,
+            borderRadius: "50%",
+            background: "radial-gradient(ellipse, rgba(52,211,153,0.06) 0%, transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+        <p
+          style={{
+            fontSize: 11,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.25)",
+            marginBottom: 28,
+          }}
+        >
+          Ready?
+        </p>
+        <h2
+          style={{
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: "clamp(40px, 6vw, 88px)",
+            fontWeight: 300,
+            letterSpacing: "-0.04em",
+            lineHeight: 1.0,
+            marginBottom: 28,
+          }}
+        >
+          See the match
+          <br />
+          before it happens.
+        </h2>
+        <p
+          style={{
+            fontSize: 16,
+            color: "rgba(255,255,255,0.35)",
+            marginBottom: 44,
+          }}
+        >
+          Free to start. No credit card.
+        </p>
+        <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+          <Link
+            to="/signup"
+            style={{
+              display: "inline-block",
+              background: "#fff",
+              color: "#000",
+              textDecoration: "none",
+              padding: "14px 32px",
+              borderRadius: 100,
+              fontSize: 15,
+              fontWeight: 500,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Start free
+          </Link>
+          <Link
+            to="/matches"
+            style={{
+              display: "inline-block",
+              border: "0.5px solid rgba(255,255,255,0.15)",
+              color: "rgba(255,255,255,0.7)",
+              textDecoration: "none",
+              padding: "14px 32px",
+              borderRadius: 100,
+              fontSize: 15,
+            }}
+          >
+            Browse matches
+          </Link>
+        </div>
       </section>
 
       <SiteFooter />
+
+      <style>{`
+        @keyframes bob {
+          0%, 100% { transform: translateX(-50%) translateY(0); }
+          50% { transform: translateX(-50%) translateY(6px); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ── Match card ────────────────────────────────────────────────────────────────
+function MatchCard({
+  home, away, sport, homeP, drawP, awayP, conf, verdict, live, accent, last,
+}: {
+  home: string; away: string; sport: string; homeP: number; drawP: number;
+  awayP: number; conf: number; verdict: string; live: boolean; accent: string; last: boolean;
+}) {
+  return (
+    <div
+      style={{
+        padding: "28px",
+        borderRight: last ? "none" : "0.5px solid rgba(255,255,255,0.06)",
+        transition: "background 0.2s ease",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.02)")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20, alignItems: "center" }}>
+        <span style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)" }}>
+          {sport}
+        </span>
+        {live && (
+          <span style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: accent, display: "flex", alignItems: "center", gap: 5 }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", background: accent, display: "inline-block", animation: "pulse 1.4s infinite" }} />
+            Live
+          </span>
+        )}
+      </div>
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 17, fontWeight: 500, letterSpacing: "-0.015em", marginBottom: 3 }}>{home}</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.2)", marginBottom: 3 }}>vs</div>
+        <div style={{ fontSize: 17, fontWeight: 500, letterSpacing: "-0.015em" }}>{away}</div>
+      </div>
+      <div style={{ height: 2, display: "flex", borderRadius: 2, overflow: "hidden", background: "rgba(255,255,255,0.06)", marginBottom: 8 }}>
+        <div style={{ width: `${homeP}%`, background: accent }} />
+        {drawP > 0 && <div style={{ width: `${drawP}%`, background: "rgba(255,255,255,0.15)" }} />}
+        <div style={{ width: `${awayP}%`, background: "rgba(255,255,255,0.06)" }} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 16 }}>
+        <span style={{ color: accent }}>{homeP}%</span>
+        {drawP > 0 && <span>{drawP}%</span>}
+        <span>{awayP}%</span>
+      </div>
+      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", borderTop: "0.5px solid rgba(255,255,255,0.05)", paddingTop: 14 }}>
+        <span style={{ color: "#fff" }}>{verdict}</span>
+        <span style={{ color: accent, marginLeft: 8 }}>{conf}% confidence</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Placeholder components (remove when real assets are in) ───────────────────
+function SplinePlaceholder({ search, accent, bg }: { search: string; accent: string; bg: string }) {
+  return (
+    <div style={{ position: "absolute", inset: 0, background: bg, display: "flex", alignItems: "flex-start", justifyContent: "flex-end", padding: "72px 52px" }}>
+      <div
+        style={{
+          background: "rgba(0,0,0,0.5)",
+          border: `0.5px solid ${accent}30`,
+          borderRadius: 12,
+          padding: "14px 18px",
+          maxWidth: 260,
+          textAlign: "right",
+          backdropFilter: "blur(8px)",
+        }}
+      >
+        <div style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: accent, marginBottom: 6 }}>
+          3D placeholder
+        </div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>
+          Search{" "}
+          <a href="https://spline.design" target="_blank" rel="noreferrer" style={{ color: "rgba(255,255,255,0.7)", textDecoration: "underline" }}>
+            spline.design
+          </a>{" "}
+          for{" "}
+          <span style={{ color: "rgba(255,255,255,0.7)" }}>"{search}"</span>
+          <br />
+          Fork → publish → replace this component
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VideoPlaceholder({ search, accent, label, hint }: { search: string; accent: string; label: string; hint: string }) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        background: "rgba(255,255,255,0.015)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 28,
+        gap: 14,
+      }}
+    >
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: "50%",
+          border: `1px solid ${accent}60`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div style={{ width: 0, height: 0, borderTop: "7px solid transparent", borderBottom: "7px solid transparent", borderLeft: `12px solid ${accent}`, marginLeft: 2 }} />
+      </div>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>{label}</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", lineHeight: 1.6, maxWidth: 280 }}>{hint}</div>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.18)", marginTop: 8 }}>
+          Free footage: pexels.com → "{search}"
+        </div>
+      </div>
     </div>
   );
 }
