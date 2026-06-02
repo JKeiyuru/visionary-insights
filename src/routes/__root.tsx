@@ -9,27 +9,65 @@ import {
 } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/use-auth";
-import { ThemeProvider } from "@/hooks/use-theme";
 
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+    <div
+      style={{
+        background: "#06060a",
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        fontFamily: '"Inter", sans-serif',
+        color: "#fff",
+        padding: 24,
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <div
+          style={{
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: 96,
+            fontWeight: 300,
+            letterSpacing: "-0.06em",
+            color: "rgba(255,255,255,0.08)",
+            lineHeight: 1,
+            marginBottom: 24,
+          }}
+        >
+          404
+        </div>
+        <h1
+          style={{
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: 24,
+            fontWeight: 300,
+            letterSpacing: "-0.025em",
+            marginBottom: 10,
+          }}
+        >
+          Page not found.
+        </h1>
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", marginBottom: 32 }}>
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
+        <Link
+          to="/"
+          style={{
+            display: "inline-block",
+            padding: "11px 26px",
+            borderRadius: 100,
+            background: "#fff",
+            color: "#000",
+            textDecoration: "none",
+            fontSize: 14,
+            fontWeight: 500,
+          }}
+        >
+          Go home
+        </Link>
       </div>
     </div>
   );
@@ -39,25 +77,50 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">This page didn't load</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+    <div
+      style={{
+        background: "#06060a",
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        fontFamily: '"Inter", sans-serif',
+        color: "#fff",
+        padding: 24,
+      }}
+    >
+      <div style={{ textAlign: "center", maxWidth: 420 }}>
+        <h1
+          style={{
+            fontFamily: '"Space Grotesk", sans-serif',
+            fontSize: 22,
+            fontWeight: 300,
+            letterSpacing: "-0.02em",
+            marginBottom: 10,
+          }}
+        >
+          This page didn't load.
+        </h1>
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", marginBottom: 28 }}>
           Something went wrong on our end. You can try refreshing or head back home.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
           <button
-            onClick={() => {
-              router.invalidate();
-              reset();
+            onClick={() => { router.invalidate(); reset(); }}
+            style={{
+              padding: "11px 22px", borderRadius: 100, border: "none",
+              background: "#fff", color: "#000", fontSize: 14, fontWeight: 500,
+              cursor: "pointer",
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Try again
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            style={{
+              padding: "11px 22px", borderRadius: 100,
+              border: "0.5px solid rgba(255,255,255,0.15)",
+              color: "rgba(255,255,255,0.7)", textDecoration: "none", fontSize: 14,
+            }}
           >
             Go home
           </a>
@@ -76,11 +139,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "VisionPlay is an AI-powered sports intelligence platform with explainable predictions across soccer, basketball, F1, baseball, tennis and more.",
+          "VisionPlay is an AI-powered sports intelligence platform with explainable predictions across soccer, basketball, F1, baseball, tennis and cricket.",
       },
-      { name: "author", content: "VisionPlay" },
+      { name: "theme-color", content: "#06060a" },
       { property: "og:title", content: "VisionPlay — AI Sports Intelligence" },
-      { property: "og:description", content: "Explainable AI predictions for the world's biggest sports." },
+      {
+        property: "og:description",
+        content: "Explainable AI predictions for the world's biggest sports.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -94,17 +160,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Space+Grotesk:wght@300;400;500;600&display=swap"
         />
         <HeadContent />
       </head>
-      <body>
+      <body style={{ margin: 0 }}>
         {children}
         <Scripts />
       </body>
@@ -116,12 +182,20 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <Outlet />
-          <Toaster />
-        </AuthProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <Outlet />
+        <Toaster
+          toastOptions={{
+            style: {
+              background: "rgba(18,18,28,0.97)",
+              border: "0.5px solid rgba(255,255,255,0.1)",
+              color: "#fff",
+              fontSize: 13,
+              fontFamily: '"Inter", sans-serif',
+            },
+          }}
+        />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
