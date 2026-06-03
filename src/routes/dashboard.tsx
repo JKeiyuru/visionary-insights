@@ -52,8 +52,12 @@ const SPORT_ACCENT: Record<string, string> = {
 function DashboardPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { isMobile, isHandheld, isWide } = useViewport();
+  const pad = isMobile ? "20px" : isHandheld ? "32px" : "64px";
+  const maxW = isWide ? 1400 : 1100;
   const [matches, setMatches] = useState<Match[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
+
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
