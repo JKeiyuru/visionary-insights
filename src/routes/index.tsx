@@ -576,15 +576,16 @@ function Home() {
       </div>
 
       {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
-      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 64px" }}>
+      <section style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 72 : isHandheld ? 96 : 120}px ${pad}` }}>
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 100,
+            gridTemplateColumns: isHandheld ? "1fr" : "1fr 1fr",
+            gap: isMobile ? 48 : isHandheld ? 60 : 100,
             alignItems: "start",
           }}
         >
+
           <div>
             <p
               style={{
