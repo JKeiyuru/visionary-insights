@@ -167,9 +167,9 @@ function MatchesPage() {
       </div>
 
       {/* ── MATCH GRID ────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 64px 80px" }}>
+      <div style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 32 : 48}px ${pad} ${isMobile ? 56 : 80}px` }}>
         {loading ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isWide ? "repeat(3, 1fr)" : "repeat(2, 1fr)", gap: 12 }}>
             {[1, 2, 3, 4].map((i) => (
               <div key={i} style={{ padding: 28, border: "0.5px solid rgba(255,255,255,0.06)", borderRadius: 12, height: 200, background: "rgba(255,255,255,0.01)" }} />
             ))}
@@ -179,13 +179,14 @@ function MatchesPage() {
             No matches for this filter yet.
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isWide ? "repeat(3, 1fr)" : "repeat(2, 1fr)", gap: 12 }}>
             {filtered.map((m) => (
               <MatchDetailCard key={m.id} match={m} plan={plan} />
             ))}
           </div>
         )}
       </div>
+
 
       <SiteFooter />
     </div>
