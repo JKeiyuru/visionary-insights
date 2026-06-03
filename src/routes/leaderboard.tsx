@@ -59,7 +59,7 @@ function LeaderboardPage() {
 
       {/* Header */}
       <div
-        style={{ maxWidth: 1100, margin: "0 auto", padding: "100px 64px 56px" }}
+        style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 80 : 100}px ${pad} ${isMobile ? 32 : 56}px` }}
       >
         <p
           style={{
@@ -75,7 +75,7 @@ function LeaderboardPage() {
         <h1
           style={{
             fontFamily: '"Space Grotesk", sans-serif',
-            fontSize: "clamp(36px, 4.5vw, 64px)",
+            fontSize: "clamp(34px, 4.5vw, 64px)",
             fontWeight: 300,
             letterSpacing: "-0.035em",
             marginBottom: 14,
@@ -85,7 +85,7 @@ function LeaderboardPage() {
         </h1>
         <p
           style={{
-            fontSize: 16,
+            fontSize: isMobile ? 14 : 16,
             color: "rgba(255,255,255,0.4)",
             maxWidth: 420,
           }}
@@ -98,17 +98,17 @@ function LeaderboardPage() {
       {/* Table */}
       <div
         style={{
-          maxWidth: 1100,
+          maxWidth: maxW,
           margin: "0 auto",
-          padding: "0 64px 100px",
+          padding: `0 ${pad} ${isMobile ? 64 : 100}px`,
         }}
       >
         {/* Column headers */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "48px 1fr 120px 100px 80px",
-            gap: 16,
+            gridTemplateColumns: gridCols,
+            gap: isMobile ? 10 : 16,
             padding: "10px 0",
             borderBottom: "0.5px solid rgba(255,255,255,0.07)",
             fontSize: 10,
@@ -119,10 +119,11 @@ function LeaderboardPage() {
         >
           <div>#</div>
           <div>Analyst</div>
-          <div>Tier</div>
-          <div style={{ textAlign: "right" }}>Accuracy</div>
-          <div style={{ textAlign: "right" }}>Forecasts</div>
+          {!isMobile && <div>Tier</div>}
+          <div style={{ textAlign: "right" }}>{isMobile ? "Acc" : "Accuracy"}</div>
+          <div style={{ textAlign: "right" }}>{isMobile ? "Picks" : "Forecasts"}</div>
         </div>
+
 
         {loading &&
           [1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
