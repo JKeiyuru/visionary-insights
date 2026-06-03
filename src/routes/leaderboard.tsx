@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { supabase } from "@/integrations/supabase/client";
+import { useViewport } from "@/hooks/use-viewport";
+
 
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({ meta: [{ title: "Leaderboard — VisionPlay" }] }),
