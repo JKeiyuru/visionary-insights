@@ -142,7 +142,7 @@ function MatchesPage() {
           WebkitBackdropFilter: "blur(20px)",
         }}
       >
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 64px", display: "flex", gap: 0, overflowX: "auto" }}>
+        <div style={{ maxWidth: maxW, margin: "0 auto", padding: `0 ${pad}`, display: "flex", gap: 0, overflowX: "auto" }}>
           {SPORT_FILTERS.map((sf) => (
             <button
               key={sf.key}
