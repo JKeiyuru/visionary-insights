@@ -109,7 +109,7 @@ function MatchesPage() {
       <FloatingNav />
 
       {/* ── PAGE HEADER ───────────────────────────────────────────────── */}
-      <div style={{ paddingTop: 100, paddingBottom: 56, maxWidth: 1100, margin: "0 auto", padding: "100px 64px 56px" }}>
+      <div style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 80 : 100}px ${pad} ${isMobile ? 32 : 56}px` }}>
         <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 14 }}>
           Live intelligence
         </p>
