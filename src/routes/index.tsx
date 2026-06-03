@@ -298,7 +298,15 @@ function Home() {
                * For now: gradient placeholder + instruction card
                * ──────────────────────────────────────────────────────────
                */}
-              <SplinePlaceholder search={c.splineSearch} accent={c.accent} bg={c.bg} />
+              <video
+                src={`/videos/${c.sport}.mp4`}
+                autoPlay
+                muted
+                loop
+                playsInline
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+              />
+
 
               {/* Cinematic overlays — keep these regardless of 3D/video */}
               <div
