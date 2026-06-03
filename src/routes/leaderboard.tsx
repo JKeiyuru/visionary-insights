@@ -29,6 +29,10 @@ const TIER_COLOR: Record<string, string> = {
 function LeaderboardPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isMobile, isHandheld, isWide } = useViewport();
+  const pad = isMobile ? "20px" : isHandheld ? "32px" : "64px";
+  const maxW = isWide ? 1400 : 1100;
+  const gridCols = isMobile ? "32px 1fr 60px 60px" : "48px 1fr 120px 100px 80px";
 
   useEffect(() => {
     supabase
