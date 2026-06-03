@@ -23,7 +23,9 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { PhoneOnboarding } from "@/components/PhoneOnboarding";
 import { TierGate } from "@/components/TierGate";
 import { useAuth } from "@/hooks/use-auth";
+import { useViewport } from "@/hooks/use-viewport";
 import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — VisionPlay" }] }),
