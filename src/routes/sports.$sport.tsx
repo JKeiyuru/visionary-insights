@@ -211,45 +211,48 @@ function SportPage() {
             )}
           </div>
 
-          {/* ── RIGHT CHAPTER RAIL ───────────────────────────────────── */}
-          <div
-            style={{
-              position: "absolute",
-              right: 36,
-              top: "50%",
-              transform: "translateY(-50%)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              pointerEvents: "none",
-            }}
-          >
-            {s.chapters.map((c: typeof s.chapters[number], i: number) => (
-              <div
-                key={i}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  gap: 8,
-                  opacity: i === activeChapter ? 1 : 0.22,
-                  transition: "opacity 0.4s ease",
-                }}
-              >
-                <span style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: i === activeChapter ? "#fff" : "rgba(255,255,255,0.4)" }}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
+          {/* ── RIGHT CHAPTER RAIL — desktop only ─────────────────── */}
+          {!isHandheld && (
+            <div
+              style={{
+                position: "absolute",
+                right: 36,
+                top: "50%",
+                transform: "translateY(-50%)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+                pointerEvents: "none",
+              }}
+            >
+              {s.chapters.map((c: typeof s.chapters[number], i: number) => (
                 <div
+                  key={i}
                   style={{
-                    height: 1,
-                    width: i === activeChapter ? 28 : 10,
-                    background: i === activeChapter ? s.accent : "rgba(255,255,255,0.2)",
-                    transition: "all 0.4s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                    gap: 8,
+                    opacity: i === activeChapter ? 1 : 0.22,
+                    transition: "opacity 0.4s ease",
                   }}
-                />
-              </div>
-            ))}
-          </div>
+                >
+                  <span style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: i === activeChapter ? "#fff" : "rgba(255,255,255,0.4)" }}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div
+                    style={{
+                      height: 1,
+                      width: i === activeChapter ? 28 : 10,
+                      background: i === activeChapter ? s.accent : "rgba(255,255,255,0.2)",
+                      transition: "all 0.4s ease",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
 
           {/* ── PROGRESS BAR ─────────────────────────────────────────── */}
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "rgba(255,255,255,0.06)", pointerEvents: "none" }}>
