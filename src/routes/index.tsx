@@ -25,6 +25,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
+import { useViewport } from "@/hooks/use-viewport";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
