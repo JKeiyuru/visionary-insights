@@ -18,7 +18,9 @@ import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { PaymentDialog, type Plan } from "@/components/PaymentDialog";
 import { useAuth } from "@/hooks/use-auth";
+import { useViewport } from "@/hooks/use-viewport";
 import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({ meta: [{ title: "Pricing — VisionPlay" }] }),
@@ -34,9 +36,13 @@ type DbPlan = {
 function PricingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isMobile, isHandheld, isWide } = useViewport();
+  const pad = isMobile ? "20px" : isHandheld ? "32px" : "64px";
+  const maxW = isWide ? 1400 : 1100;
   const [plans, setPlans] = useState<DbPlan[]>([]);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [open, setOpen] = useState(false);
+
 
   useEffect(() => {
     async function load() {
