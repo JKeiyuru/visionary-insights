@@ -135,35 +135,16 @@ function SportCard({
         While you build those, this gradient placeholder looks clean.
       */}
 
-      {/* Gradient background (placeholder) */}
-      <div
+      <video
+        src={`/videos/${s.slug}.mp4`}
+        autoPlay
+        muted
+        loop
+        playsInline
         className="sport-overlay"
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: `radial-gradient(ellipse 80% 80% at 70% 30%, ${s.primary}40 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 20% 80%, ${s.accent}25 0%, transparent 55%)`,
-          opacity: 0.35,
-          transition: "opacity 0.4s ease",
-        }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.45 }}
       />
 
-      {/* Placeholder label */}
-      <div
-        style={{
-          position: "absolute",
-          top: 14,
-          right: 14,
-          background: "rgba(0,0,0,0.5)",
-          border: `0.5px solid ${s.accent}30`,
-          borderRadius: 7,
-          padding: "5px 9px",
-          backdropFilter: "blur(6px)",
-        }}
-      >
-        <div style={{ fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: s.accent, opacity: 0.7 }}>
-          3D placeholder
-        </div>
-      </div>
 
       {/* Dark gradient overlay */}
       <div
