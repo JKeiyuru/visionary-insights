@@ -732,16 +732,17 @@ function Home() {
         style={{
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
           borderBottom: "0.5px solid rgba(255,255,255,0.06)",
-          padding: "80px 0",
+          padding: `${isMobile ? 48 : 80}px 0`,
         }}
       >
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 64px" }}>
+        <div style={{ maxWidth: maxW, margin: "0 auto", padding: `0 ${pad}` }}>
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-end",
-              marginBottom: 40,
+              marginBottom: isMobile ? 24 : 40,
+              gap: 16,
             }}
           >
             <h2
@@ -756,7 +757,7 @@ function Home() {
             </h2>
             <Link
               to="/matches"
-              style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", textDecoration: "none" }}
+              style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", textDecoration: "none", flexShrink: 0 }}
             >
               All matches →
             </Link>
@@ -764,7 +765,7 @@ function Home() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
+              gridTemplateColumns: isMobile ? "1fr" : isHandheld ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
               border: "0.5px solid rgba(255,255,255,0.06)",
               borderRadius: 16,
               overflow: "hidden",
@@ -780,6 +781,7 @@ function Home() {
           </div>
         </div>
       </section>
+
 
       {/* ── SPORTS GRID ──────────────────────────────────────────────────── */}
       <section style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 64px" }}>
