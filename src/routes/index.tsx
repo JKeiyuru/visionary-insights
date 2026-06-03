@@ -546,7 +546,7 @@ function Home() {
         style={{
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
           borderBottom: "0.5px solid rgba(255,255,255,0.06)",
-          padding: "32px 64px",
+          padding: `${isMobile ? 24 : 32}px ${pad}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
