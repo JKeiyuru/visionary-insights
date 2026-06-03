@@ -868,18 +868,19 @@ function Home() {
       <section
         style={{
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
-          padding: "120px 64px",
+          padding: `${isMobile ? 72 : isHandheld ? 96 : 120}px ${pad}`,
         }}
       >
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ maxWidth: maxW, margin: "0 auto" }}>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 100,
+              gridTemplateColumns: isHandheld ? "1fr" : "1fr 1fr",
+              gap: isMobile ? 40 : isHandheld ? 60 : 100,
               alignItems: "start",
             }}
           >
+
             <div>
               <p
                 style={{
