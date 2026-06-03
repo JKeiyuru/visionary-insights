@@ -440,19 +440,21 @@ function Home() {
             </div>
           </div>
 
-          {/* ── CHAPTER RAIL (right side) ─────────────────────────────── */}
-          <div
-            style={{
-              position: "absolute",
-              right: 36,
-              top: "50%",
-              transform: "translateY(-50%)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              pointerEvents: "none",
-            }}
-          >
+          {/* ── CHAPTER RAIL (right side) — hidden on handheld ─────── */}
+          {!isHandheld && (
+            <div
+              style={{
+                position: "absolute",
+                right: 36,
+                top: "50%",
+                transform: "translateY(-50%)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                pointerEvents: "none",
+              }}
+            >
+
             {CHAPTERS.map((c, i) => (
               <div
                 key={c.sport}
