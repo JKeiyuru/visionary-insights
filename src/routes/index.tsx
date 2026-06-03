@@ -341,14 +341,15 @@ function Home() {
           <div
             style={{
               position: "absolute",
-              bottom: 100,
+              bottom: isMobile ? 60 : 100,
               left: 0,
               right: 0,
-              padding: "0 64px",
-              maxWidth: 700,
+              padding: `0 ${pad}`,
+              maxWidth: 760,
               pointerEvents: "none",
             }}
           >
+
             {/* Sport pill */}
             <div
               style={{
