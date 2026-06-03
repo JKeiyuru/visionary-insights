@@ -108,7 +108,15 @@ function SportPage() {
             [SPLINE-SCENE] Replace this SplinePlaceholder with your real scene.
             See instructions at the top of this file.
           */}
-          <SplinePlaceholder sport={s} />
+          <video
+            src={`/videos/${s.slug}.mp4`}
+            autoPlay
+            muted
+            loop
+            playsInline
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          />
+
 
           {/* Cinematic overlays */}
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(6,6,10,0.1) 0%, rgba(6,6,10,0.45) 55%, rgba(6,6,10,0.95) 100%)", pointerEvents: "none" }} />
