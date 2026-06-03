@@ -90,44 +90,15 @@ function DashboardPage() {
           marginBottom: 0,
         }}
       >
-        {/*
-          [SPLINE-PERSONAL] — Replace this div with your Spline scene:
-          <Spline scene="..." style={{ position:"absolute", inset:0 }} />
-
-          [VIDEO-AMBIENT] — Or replace with a looping video:
-          <video src="/videos/dashboard-ambient.mp4" autoPlay muted loop playsInline
-            style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />
-
-          Source for video: pexels.com → "football stadium night aerial" (free commercial)
-        */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: `radial-gradient(ellipse 80% 120% at 60% 50%, ${tierColor}22 0%, #06060a 70%)`,
-          }}
+        <video
+          src="/videos/dashboard-ambient.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
         />
-        {/* Placeholder label */}
-        <div
-          style={{
-            position: "absolute",
-            top: 80,
-            right: 40,
-            background: "rgba(0,0,0,0.4)",
-            border: `0.5px solid ${tierColor}40`,
-            borderRadius: 10,
-            padding: "10px 14px",
-            backdropFilter: "blur(8px)",
-          }}
-        >
-          <div style={{ fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: tierColor, marginBottom: 4 }}>
-            3D placeholder
-          </div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", lineHeight: 1.5, maxWidth: 200 }}>
-            Add your Spline scene here.
-            <br />Search "sports stadium" on spline.design
-          </div>
-        </div>
+
 
         {/* Overlays */}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(6,6,10,0.2) 0%, rgba(6,6,10,0.85) 100%)" }} />

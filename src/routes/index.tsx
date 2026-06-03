@@ -43,18 +43,17 @@ export const Route = createFileRoute("/")({
 // ── Sport chapters ────────────────────────────────────────────────────────────
 const CHAPTERS = [
   {
-    sport: "Soccer",
+    sport: "soccer",
     splineSearch: "soccer ball stadium",
     videoSearch: "football stadium night crowd pexels",
     headline: "See the goal\nbefore it happens.",
     body: "Expected goals, momentum shifts, weather, form — synthesised into one confident prediction, explained step by step.",
     stat: { value: "71.4%", label: "Average accuracy" },
     accent: "#34d399",
-    // placeholder gradient until Spline/video is connected
     bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #0d3320 0%, #06060a 70%)",
   },
   {
-    sport: "Formula 1",
+    sport: "formula1",
     splineSearch: "formula 1 car racing",
     videoSearch: "formula 1 race track night pexels",
     headline: "Every lap,\nevery strategy call.",
@@ -64,7 +63,7 @@ const CHAPTERS = [
     bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #3d0d0d 0%, #06060a 70%)",
   },
   {
-    sport: "Basketball",
+    sport: "basketball",
     splineSearch: "basketball court 3d",
     videoSearch: "basketball arena court lights pexels",
     headline: "Every possession.\nLive.",
@@ -74,7 +73,7 @@ const CHAPTERS = [
     bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #3d1e0d 0%, #06060a 70%)",
   },
   {
-    sport: "Tennis",
+    sport: "tennis",
     splineSearch: "tennis ball racket 3d",
     videoSearch: "tennis court aerial overhead pexels",
     headline: "Surface.\nSpin. Stamina.",
@@ -84,7 +83,7 @@ const CHAPTERS = [
     bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #1a2e0a 0%, #06060a 70%)",
   },
   {
-    sport: "Baseball",
+    sport: "baseball",
     splineSearch: "baseball bat ball stadium",
     videoSearch: "baseball stadium night lights pexels",
     headline: "Every pitch\nis probability.",
@@ -94,7 +93,7 @@ const CHAPTERS = [
     bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #0d1a3d 0%, #06060a 70%)",
   },
   {
-    sport: "Cricket",
+    sport: "cricket",
     splineSearch: "cricket ball bat pitch",
     videoSearch: "cricket stadium match day aerial pexels",
     headline: "DLS. Dew.\nPitch wear.",
@@ -104,6 +103,7 @@ const CHAPTERS = [
     bg: "radial-gradient(ellipse 80% 100% at 60% 40%, #2e220d 0%, #06060a 70%)",
   },
 ];
+
 
 // ── Placeholder components ────────────────────────────────────────────────────
 
@@ -298,7 +298,15 @@ function Home() {
                * For now: gradient placeholder + instruction card
                * ──────────────────────────────────────────────────────────
                */}
-              <SplinePlaceholder search={c.splineSearch} accent={c.accent} bg={c.bg} />
+              <video
+                src={`/videos/${c.sport}.mp4`}
+                autoPlay
+                muted
+                loop
+                playsInline
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+              />
+
 
               {/* Cinematic overlays — keep these regardless of 3D/video */}
               <div
