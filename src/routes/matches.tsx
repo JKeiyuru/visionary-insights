@@ -21,7 +21,9 @@ import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useViewport } from "@/hooks/use-viewport";
 import { TierGate, tierAllows } from "@/components/TierGate";
+
 
 export const Route = createFileRoute("/matches")({
   head: () => ({ meta: [{ title: "Matches — VisionPlay" }] }),
@@ -70,10 +72,14 @@ const SPORT_ACCENT: Record<string, string> = {
 
 function MatchesPage() {
   const { user } = useAuth();
+  const { isMobile, isHandheld, isWide } = useViewport();
+  const pad = isMobile ? "20px" : isHandheld ? "32px" : "64px";
+  const maxW = isWide ? 1400 : 1100;
   const [matches, setMatches] = useState<Match[]>([]);
   const [filter, setFilter] = useState("all");
   const [plan, setPlan] = useState("free");
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     supabase
