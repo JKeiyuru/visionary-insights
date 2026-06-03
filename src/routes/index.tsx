@@ -943,7 +943,7 @@ function Home() {
                   key={t.name}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "120px 1fr",
+                    gridTemplateColumns: isMobile ? "100px 1fr" : "120px 1fr",
                     gap: 24,
                     padding: "20px 0",
                     borderBottom: i < 3 ? "0.5px solid rgba(255,255,255,0.06)" : "none",
