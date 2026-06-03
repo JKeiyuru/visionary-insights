@@ -681,9 +681,9 @@ function Home() {
         {/* Feature list */}
         <div
           style={{
-            marginTop: 80,
+            marginTop: isMobile ? 56 : 80,
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
+            gridTemplateColumns: isMobile ? "1fr" : isHandheld ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
             borderTop: "0.5px solid rgba(255,255,255,0.06)",
           }}
         >
@@ -692,14 +692,17 @@ function Home() {
             { n: "02", title: "Live momentum", desc: "Probability shifts as matches unfold. 30-second refresh rate." },
             { n: "03", title: "Reputation system", desc: "Forecast accurately and climb from Bronze to Oracle." },
             { n: "04", title: "6 sports", desc: "Soccer, F1, basketball, tennis, baseball, cricket." },
-          ].map((f) => (
+          ].map((f, i) => (
             <div
               key={f.n}
               style={{
                 padding: "28px 0",
                 paddingRight: 24,
-                borderRight: "0.5px solid rgba(255,255,255,0.06)",
-                paddingLeft: f.n === "01" ? 0 : 24,
+                borderRight: !isMobile && (isHandheld ? i % 2 === 0 : i < 3)
+                  ? "0.5px solid rgba(255,255,255,0.06)"
+                  : "none",
+                borderBottom: isMobile && i < 3 ? "0.5px solid rgba(255,255,255,0.06)" : "none",
+                paddingLeft: isMobile ? 0 : isHandheld ? (i % 2 === 0 ? 0 : 24) : (i === 0 ? 0 : 24),
               }}
             >
               <div
@@ -721,6 +724,7 @@ function Home() {
             </div>
           ))}
         </div>
+
       </section>
 
       {/* ── LIVE MATCHES STRIP ───────────────────────────────────────────── */}
