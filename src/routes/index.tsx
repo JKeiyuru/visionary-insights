@@ -979,10 +979,10 @@ function Home() {
       <section
         style={{
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
-          padding: "120px 64px",
+          padding: `${isMobile ? 72 : isHandheld ? 96 : 120}px ${pad}`,
         }}
       >
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ maxWidth: maxW, margin: "0 auto" }}>
           <p
             style={{
               fontSize: 11,
@@ -999,7 +999,9 @@ function Home() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-end",
-              marginBottom: 48,
+              marginBottom: isMobile ? 32 : 48,
+              gap: 16,
+              flexWrap: "wrap",
             }}
           >
             <h2
@@ -1022,7 +1024,8 @@ function Home() {
             </Link>
           </div>
           <div
-            style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1 }}
+            style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isHandheld ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: isMobile ? 12 : 1 }}
+
           >
             {[
               { name: "Free", price: "KES 0", period: "forever", features: ["5 picks / day", "Basic insights", "Community access"], accent: "rgba(255,255,255,0.2)" },
