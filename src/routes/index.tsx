@@ -784,7 +784,7 @@ function Home() {
 
 
       {/* ── SPORTS GRID ──────────────────────────────────────────────────── */}
-      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 64px" }}>
+      <section style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 72 : isHandheld ? 96 : 120}px ${pad}` }}>
         <p
           style={{
             fontSize: 11,
@@ -802,7 +802,7 @@ function Home() {
             fontSize: "clamp(28px, 3.2vw, 48px)",
             fontWeight: 300,
             letterSpacing: "-0.03em",
-            marginBottom: 48,
+            marginBottom: isMobile ? 32 : 48,
           }}
         >
           Six sports.
@@ -812,7 +812,7 @@ function Home() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
+            gridTemplateColumns: isMobile ? "1fr" : isHandheld ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
             gap: 1,
             background: "rgba(255,255,255,0.04)",
             borderRadius: 16,
@@ -820,6 +820,7 @@ function Home() {
             border: "0.5px solid rgba(255,255,255,0.06)",
           }}
         >
+
           {CHAPTERS.map((c) => (
             <Link
               key={c.sport}
