@@ -158,8 +158,8 @@ function LeaderboardPage() {
               key={r.id}
               style={{
                 display: "grid",
-                gridTemplateColumns: "48px 1fr 120px 100px 80px",
-                gap: 16,
+                gridTemplateColumns: gridCols,
+                gap: isMobile ? 10 : 16,
                 padding: "16px 0",
                 borderBottom: "0.5px solid rgba(255,255,255,0.04)",
                 alignItems: "center",
@@ -191,41 +191,46 @@ function LeaderboardPage() {
               {/* Name */}
               <div
                 style={{
-                  fontSize: 15,
+                  fontSize: isMobile ? 14 : 15,
                   fontWeight: isTop3 ? 500 : 400,
                   letterSpacing: "-0.01em",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {r.display_name ?? "Anonymous"}
+                {isMobile && (
+                  <div style={{ fontSize: 10, color: tierColor, textTransform: "capitalize", marginTop: 2 }}>
+                    {r.tier}
+                  </div>
+                )}
               </div>
 
-              {/* Tier */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 7,
-                }}
-              >
-                <div
-                  style={{
-                    width: 5,
-                    height: 5,
-                    borderRadius: "50%",
-                    background: tierColor,
-                    flexShrink: 0,
-                  }}
-                />
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: tierColor,
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {r.tier}
-                </span>
-              </div>
+              {/* Tier (desktop only) */}
+              {!isMobile && (
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <div
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: "50%",
+                      background: tierColor,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: tierColor,
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {r.tier}
+                  </span>
+                </div>
+              )}
+
 
               {/* Accuracy */}
               <div
