@@ -23,7 +23,9 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { PhoneOnboarding } from "@/components/PhoneOnboarding";
 import { TierGate } from "@/components/TierGate";
 import { useAuth } from "@/hooks/use-auth";
+import { useViewport } from "@/hooks/use-viewport";
 import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — VisionPlay" }] }),
@@ -50,8 +52,12 @@ const SPORT_ACCENT: Record<string, string> = {
 function DashboardPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { isMobile, isHandheld, isWide } = useViewport();
+  const pad = isMobile ? "20px" : isHandheld ? "32px" : "64px";
+  const maxW = isWide ? 1400 : 1100;
   const [matches, setMatches] = useState<Match[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
+
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -85,7 +91,7 @@ function DashboardPage() {
       <div
         style={{
           position: "relative",
-          height: 400,
+          height: isMobile ? 300 : isHandheld ? 340 : 400,
           overflow: "hidden",
           marginBottom: 0,
         }}
@@ -105,14 +111,14 @@ function DashboardPage() {
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(6,6,10,0.8) 0%, transparent 60%)" }} />
 
         {/* Welcome text */}
-        <div style={{ position: "absolute", bottom: 40, left: 0, padding: "0 64px" }}>
+        <div style={{ position: "absolute", bottom: isMobile ? 28 : 40, left: 0, right: 0, padding: `0 ${pad}`, maxWidth: maxW, margin: "0 auto" }}>
           <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: tierColor, marginBottom: 12 }}>
             {profile?.tier ?? "bronze"} tier
           </div>
           <h1
             style={{
               fontFamily: '"Space Grotesk", sans-serif',
-              fontSize: "clamp(28px, 3.5vw, 48px)",
+              fontSize: "clamp(26px, 3.5vw, 48px)",
               fontWeight: 300,
               letterSpacing: "-0.03em",
               marginBottom: 8,
@@ -120,7 +126,7 @@ function DashboardPage() {
           >
             {profile?.display_name ? `Welcome back, ${profile.display_name}.` : "Welcome back."}
           </h1>
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.4)" }}>
+          <p style={{ fontSize: isMobile ? 13 : 15, color: "rgba(255,255,255,0.4)" }}>
             Your AI sports intelligence is live.
           </p>
         </div>
@@ -129,11 +135,11 @@ function DashboardPage() {
       {/* ── STATS ROW ─────────────────────────────────────────────────── */}
       <div
         style={{
-          maxWidth: 1100,
+          maxWidth: maxW,
           margin: "0 auto",
-          padding: "40px 64px 0",
+          padding: `${isMobile ? 24 : 40}px ${pad} 0`,
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
+          gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
           gap: 1,
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
           borderBottom: "0.5px solid rgba(255,255,255,0.06)",
@@ -148,8 +154,11 @@ function DashboardPage() {
           <div
             key={s.label}
             style={{
-              padding: "28px 24px",
-              borderRight: i < 3 ? "0.5px solid rgba(255,255,255,0.06)" : "none",
+              padding: isMobile ? "20px 16px" : "28px 24px",
+              borderRight: isMobile
+                ? (i % 2 === 0 ? "0.5px solid rgba(255,255,255,0.06)" : "none")
+                : (i < 3 ? "0.5px solid rgba(255,255,255,0.06)" : "none"),
+              borderBottom: isMobile && i < 2 ? "0.5px solid rgba(255,255,255,0.06)" : "none",
             }}
           >
             <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", marginBottom: 10 }}>
@@ -158,7 +167,7 @@ function DashboardPage() {
             <div
               style={{
                 fontFamily: '"Space Grotesk", sans-serif',
-                fontSize: 28,
+                fontSize: isMobile ? 22 : 28,
                 fontWeight: 400,
                 letterSpacing: "-0.03em",
                 color: s.color,
@@ -172,8 +181,8 @@ function DashboardPage() {
       </div>
 
       {/* ── UPCOMING MATCHES ──────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "56px 64px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
+      <div style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 40 : 56}px ${pad}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: isMobile ? 20 : 32 }}>
           <h2 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: "clamp(20px, 2.5vw, 32px)", fontWeight: 300, letterSpacing: "-0.025em" }}>
             Upcoming matches
           </h2>
@@ -182,7 +191,7 @@ function DashboardPage() {
           </Link>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isHandheld ? "repeat(2, 1fr)" : "repeat(3, 1fr)", gap: 12 }}>
           {matches.slice(0, 6).map((m) => {
             const accent = SPORT_ACCENT[m.sport] ?? "rgba(255,255,255,0.3)";
             return (
@@ -219,11 +228,10 @@ function DashboardPage() {
       {/* ── PREMIUM SECTION ───────────────────────────────────────────── */}
       <div
         style={{
-          maxWidth: 1100,
+          maxWidth: maxW,
           margin: "0 auto",
-          padding: "0 64px 80px",
+          padding: `${isMobile ? 40 : 56}px ${pad} ${isMobile ? 56 : 80}px`,
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
-          paddingTop: 56,
         }}
       >
         <h2 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: "clamp(18px, 2.2vw, 28px)", fontWeight: 300, letterSpacing: "-0.025em", marginBottom: 24 }}>
@@ -239,19 +247,19 @@ function DashboardPage() {
       {/* ── QUICK LINKS ───────────────────────────────────────────────── */}
       <div
         style={{
-          maxWidth: 1100,
+          maxWidth: maxW,
           margin: "0 auto",
-          padding: "0 64px 100px",
+          padding: `0 ${pad} ${isMobile ? 64 : 100}px`,
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 1,
+          gridTemplateColumns: isHandheld ? "1fr" : "1fr 1fr",
+          gap: isHandheld ? 24 : 1,
         }}
       >
         {[
           { to: "/pricing", label: "Upgrade your plan", desc: "Unlock premium leagues, live momentum and revenue share.", cta: "See plans →" },
           { to: "/leaderboard", label: "Leaderboard", desc: "See where the world's sharpest forecasters rank right now.", cta: "View rankings →" },
         ].map((q) => (
-          <div key={q.to} style={{ padding: "28px 0", paddingRight: 48 }}>
+          <div key={q.to} style={{ padding: "28px 0", paddingRight: isHandheld ? 0 : 48 }}>
             <h3 style={{ fontSize: 17, fontWeight: 500, letterSpacing: "-0.01em", marginBottom: 8 }}>{q.label}</h3>
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.55, marginBottom: 18 }}>{q.desc}</p>
             <Link to={q.to} style={{ fontSize: 13, color: "#fff", textDecoration: "none", borderBottom: "0.5px solid rgba(255,255,255,0.25)", paddingBottom: 2 }}>
@@ -260,6 +268,7 @@ function DashboardPage() {
           </div>
         ))}
       </div>
+
 
       <SiteFooter />
     </div>

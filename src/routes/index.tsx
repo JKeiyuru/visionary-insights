@@ -25,6 +25,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
+import { useViewport } from "@/hooks/use-viewport";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -231,6 +233,10 @@ function Home() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const chapter = CHAPTERS[activeChapter];
+  const vp = useViewport();
+  const { isMobile, isHandheld, isWide } = vp;
+  const pad = isMobile ? "20px" : isHandheld ? "32px" : "64px";
+  const maxW = isWide ? 1400 : 1100;
 
   useEffect(() => {
     function onScroll() {
@@ -245,6 +251,7 @@ function Home() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
 
   return (
     <div
@@ -334,14 +341,15 @@ function Home() {
           <div
             style={{
               position: "absolute",
-              bottom: 100,
+              bottom: isMobile ? 60 : 100,
               left: 0,
               right: 0,
-              padding: "0 64px",
-              maxWidth: 700,
+              padding: `0 ${pad}`,
+              maxWidth: 760,
               pointerEvents: "none",
             }}
           >
+
             {/* Sport pill */}
             <div
               style={{
@@ -432,19 +440,21 @@ function Home() {
             </div>
           </div>
 
-          {/* ── CHAPTER RAIL (right side) ─────────────────────────────── */}
-          <div
-            style={{
-              position: "absolute",
-              right: 36,
-              top: "50%",
-              transform: "translateY(-50%)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              pointerEvents: "none",
-            }}
-          >
+          {/* ── CHAPTER RAIL (right side) — hidden on handheld ─────── */}
+          {!isHandheld && (
+            <div
+              style={{
+                position: "absolute",
+                right: 36,
+                top: "50%",
+                transform: "translateY(-50%)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                pointerEvents: "none",
+              }}
+            >
+
             {CHAPTERS.map((c, i) => (
               <div
                 key={c.sport}
@@ -477,7 +487,10 @@ function Home() {
                 />
               </div>
             ))}
-          </div>
+            </div>
+          )}
+
+
 
           {/* ── SCROLL PROGRESS BAR ─────────────────────────────────────── */}
           <div
@@ -533,7 +546,7 @@ function Home() {
         style={{
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
           borderBottom: "0.5px solid rgba(255,255,255,0.06)",
-          padding: "32px 64px",
+          padding: `${isMobile ? 24 : 32}px ${pad}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -563,15 +576,16 @@ function Home() {
       </div>
 
       {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
-      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 64px" }}>
+      <section style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 72 : isHandheld ? 96 : 120}px ${pad}` }}>
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 100,
+            gridTemplateColumns: isHandheld ? "1fr" : "1fr 1fr",
+            gap: isMobile ? 48 : isHandheld ? 60 : 100,
             alignItems: "start",
           }}
         >
+
           <div>
             <p
               style={{
@@ -667,9 +681,9 @@ function Home() {
         {/* Feature list */}
         <div
           style={{
-            marginTop: 80,
+            marginTop: isMobile ? 56 : 80,
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
+            gridTemplateColumns: isMobile ? "1fr" : isHandheld ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
             borderTop: "0.5px solid rgba(255,255,255,0.06)",
           }}
         >
@@ -678,14 +692,17 @@ function Home() {
             { n: "02", title: "Live momentum", desc: "Probability shifts as matches unfold. 30-second refresh rate." },
             { n: "03", title: "Reputation system", desc: "Forecast accurately and climb from Bronze to Oracle." },
             { n: "04", title: "6 sports", desc: "Soccer, F1, basketball, tennis, baseball, cricket." },
-          ].map((f) => (
+          ].map((f, i) => (
             <div
               key={f.n}
               style={{
                 padding: "28px 0",
                 paddingRight: 24,
-                borderRight: "0.5px solid rgba(255,255,255,0.06)",
-                paddingLeft: f.n === "01" ? 0 : 24,
+                borderRight: !isMobile && (isHandheld ? i % 2 === 0 : i < 3)
+                  ? "0.5px solid rgba(255,255,255,0.06)"
+                  : "none",
+                borderBottom: isMobile && i < 3 ? "0.5px solid rgba(255,255,255,0.06)" : "none",
+                paddingLeft: isMobile ? 0 : isHandheld ? (i % 2 === 0 ? 0 : 24) : (i === 0 ? 0 : 24),
               }}
             >
               <div
@@ -707,6 +724,7 @@ function Home() {
             </div>
           ))}
         </div>
+
       </section>
 
       {/* ── LIVE MATCHES STRIP ───────────────────────────────────────────── */}
@@ -714,16 +732,17 @@ function Home() {
         style={{
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
           borderBottom: "0.5px solid rgba(255,255,255,0.06)",
-          padding: "80px 0",
+          padding: `${isMobile ? 48 : 80}px 0`,
         }}
       >
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 64px" }}>
+        <div style={{ maxWidth: maxW, margin: "0 auto", padding: `0 ${pad}` }}>
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-end",
-              marginBottom: 40,
+              marginBottom: isMobile ? 24 : 40,
+              gap: 16,
             }}
           >
             <h2
@@ -738,7 +757,7 @@ function Home() {
             </h2>
             <Link
               to="/matches"
-              style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", textDecoration: "none" }}
+              style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", textDecoration: "none", flexShrink: 0 }}
             >
               All matches →
             </Link>
@@ -746,7 +765,7 @@ function Home() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
+              gridTemplateColumns: isMobile ? "1fr" : isHandheld ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
               border: "0.5px solid rgba(255,255,255,0.06)",
               borderRadius: 16,
               overflow: "hidden",
@@ -763,8 +782,9 @@ function Home() {
         </div>
       </section>
 
+
       {/* ── SPORTS GRID ──────────────────────────────────────────────────── */}
-      <section style={{ maxWidth: 1100, margin: "0 auto", padding: "120px 64px" }}>
+      <section style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 72 : isHandheld ? 96 : 120}px ${pad}` }}>
         <p
           style={{
             fontSize: 11,
@@ -782,7 +802,7 @@ function Home() {
             fontSize: "clamp(28px, 3.2vw, 48px)",
             fontWeight: 300,
             letterSpacing: "-0.03em",
-            marginBottom: 48,
+            marginBottom: isMobile ? 32 : 48,
           }}
         >
           Six sports.
@@ -792,7 +812,7 @@ function Home() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
+            gridTemplateColumns: isMobile ? "1fr" : isHandheld ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
             gap: 1,
             background: "rgba(255,255,255,0.04)",
             borderRadius: 16,
@@ -800,6 +820,7 @@ function Home() {
             border: "0.5px solid rgba(255,255,255,0.06)",
           }}
         >
+
           {CHAPTERS.map((c) => (
             <Link
               key={c.sport}
@@ -847,18 +868,19 @@ function Home() {
       <section
         style={{
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
-          padding: "120px 64px",
+          padding: `${isMobile ? 72 : isHandheld ? 96 : 120}px ${pad}`,
         }}
       >
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ maxWidth: maxW, margin: "0 auto" }}>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 100,
+              gridTemplateColumns: isHandheld ? "1fr" : "1fr 1fr",
+              gap: isMobile ? 40 : isHandheld ? 60 : 100,
               alignItems: "start",
             }}
           >
+
             <div>
               <p
                 style={{
@@ -921,7 +943,7 @@ function Home() {
                   key={t.name}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "120px 1fr",
+                    gridTemplateColumns: isMobile ? "100px 1fr" : "120px 1fr",
                     gap: 24,
                     padding: "20px 0",
                     borderBottom: i < 3 ? "0.5px solid rgba(255,255,255,0.06)" : "none",
@@ -957,10 +979,10 @@ function Home() {
       <section
         style={{
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
-          padding: "120px 64px",
+          padding: `${isMobile ? 72 : isHandheld ? 96 : 120}px ${pad}`,
         }}
       >
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ maxWidth: maxW, margin: "0 auto" }}>
           <p
             style={{
               fontSize: 11,
@@ -977,7 +999,9 @@ function Home() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-end",
-              marginBottom: 48,
+              marginBottom: isMobile ? 32 : 48,
+              gap: 16,
+              flexWrap: "wrap",
             }}
           >
             <h2
@@ -1000,7 +1024,8 @@ function Home() {
             </Link>
           </div>
           <div
-            style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1 }}
+            style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isHandheld ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: isMobile ? 12 : 1 }}
+
           >
             {[
               { name: "Free", price: "KES 0", period: "forever", features: ["5 picks / day", "Basic insights", "Community access"], accent: "rgba(255,255,255,0.2)" },
@@ -1090,7 +1115,7 @@ function Home() {
       <section
         style={{
           textAlign: "center",
-          padding: "160px 64px",
+          padding: `${isMobile ? 96 : isHandheld ? 120 : 160}px ${pad}`,
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
           position: "relative",
           overflow: "hidden",

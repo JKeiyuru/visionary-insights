@@ -21,7 +21,9 @@ import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useViewport } from "@/hooks/use-viewport";
 import { TierGate, tierAllows } from "@/components/TierGate";
+
 
 export const Route = createFileRoute("/matches")({
   head: () => ({ meta: [{ title: "Matches — VisionPlay" }] }),
@@ -70,10 +72,14 @@ const SPORT_ACCENT: Record<string, string> = {
 
 function MatchesPage() {
   const { user } = useAuth();
+  const { isMobile, isHandheld, isWide } = useViewport();
+  const pad = isMobile ? "20px" : isHandheld ? "32px" : "64px";
+  const maxW = isWide ? 1400 : 1100;
   const [matches, setMatches] = useState<Match[]>([]);
   const [filter, setFilter] = useState("all");
   const [plan, setPlan] = useState("free");
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     supabase
@@ -103,7 +109,7 @@ function MatchesPage() {
       <FloatingNav />
 
       {/* ── PAGE HEADER ───────────────────────────────────────────────── */}
-      <div style={{ paddingTop: 100, paddingBottom: 56, maxWidth: 1100, margin: "0 auto", padding: "100px 64px 56px" }}>
+      <div style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 80 : 100}px ${pad} ${isMobile ? 32 : 56}px` }}>
         <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 14 }}>
           Live intelligence
         </p>
@@ -136,7 +142,7 @@ function MatchesPage() {
           WebkitBackdropFilter: "blur(20px)",
         }}
       >
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 64px", display: "flex", gap: 0, overflowX: "auto" }}>
+        <div style={{ maxWidth: maxW, margin: "0 auto", padding: `0 ${pad}`, display: "flex", gap: 0, overflowX: "auto" }}>
           {SPORT_FILTERS.map((sf) => (
             <button
               key={sf.key}
@@ -161,9 +167,9 @@ function MatchesPage() {
       </div>
 
       {/* ── MATCH GRID ────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 64px 80px" }}>
+      <div style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 32 : 48}px ${pad} ${isMobile ? 56 : 80}px` }}>
         {loading ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isWide ? "repeat(3, 1fr)" : "repeat(2, 1fr)", gap: 12 }}>
             {[1, 2, 3, 4].map((i) => (
               <div key={i} style={{ padding: 28, border: "0.5px solid rgba(255,255,255,0.06)", borderRadius: 12, height: 200, background: "rgba(255,255,255,0.01)" }} />
             ))}
@@ -173,13 +179,14 @@ function MatchesPage() {
             No matches for this filter yet.
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 1 }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isWide ? "repeat(3, 1fr)" : "repeat(2, 1fr)", gap: 12 }}>
             {filtered.map((m) => (
               <MatchDetailCard key={m.id} match={m} plan={plan} />
             ))}
           </div>
         )}
       </div>
+
 
       <SiteFooter />
     </div>

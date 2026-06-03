@@ -18,7 +18,9 @@ import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { PaymentDialog, type Plan } from "@/components/PaymentDialog";
 import { useAuth } from "@/hooks/use-auth";
+import { useViewport } from "@/hooks/use-viewport";
 import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({ meta: [{ title: "Pricing — VisionPlay" }] }),
@@ -34,9 +36,13 @@ type DbPlan = {
 function PricingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isMobile, isHandheld, isWide } = useViewport();
+  const pad = isMobile ? "20px" : isHandheld ? "32px" : "64px";
+  const maxW = isWide ? 1400 : 1100;
   const [plans, setPlans] = useState<DbPlan[]>([]);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [open, setOpen] = useState(false);
+
 
   useEffect(() => {
     async function load() {
@@ -62,44 +68,20 @@ function PricingPage() {
       <FloatingNav />
 
       {/* ── HERO ──────────────────────────────────────────────────────── */}
-      <div style={{ position: "relative", height: 360, overflow: "hidden" }}>
-        {/*
-          [SPLINE-BG] Replace this gradient with a Spline trophy scene.
-          Search "trophy 3d" or "award gold" on spline.design community.
-        */}
+      <div style={{ position: "relative", height: isMobile ? 260 : isHandheld ? 300 : 360, overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 100% at 70% 50%, #1a0a2e 0%, #06060a 65%)" }} />
-
-        {/* Placeholder instruction */}
-        <div
-          style={{
-            position: "absolute",
-            top: 80,
-            right: 52,
-            background: "rgba(0,0,0,0.45)",
-            border: "0.5px solid rgba(167,139,250,0.25)",
-            borderRadius: 10,
-            padding: "10px 14px",
-            backdropFilter: "blur(8px)",
-          }}
-        >
-          <div style={{ fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: "#a78bfa", marginBottom: 4 }}>3D placeholder</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", lineHeight: 1.5, maxWidth: 200 }}>
-            Add a Spline trophy scene here.
-            <br />Search "trophy" on spline.design
-          </div>
-        </div>
 
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 0%, rgba(6,6,10,0.9) 100%)" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(6,6,10,0.85) 0%, transparent 60%)" }} />
 
-        <div style={{ position: "absolute", bottom: 48, left: 0, padding: "0 64px" }}>
+        <div style={{ position: "absolute", bottom: isMobile ? 32 : 48, left: 0, right: 0, padding: `0 ${pad}`, maxWidth: maxW, margin: "0 auto" }}>
           <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 14 }}>
             Pricing
           </p>
           <h1
             style={{
               fontFamily: '"Space Grotesk", sans-serif',
-              fontSize: "clamp(32px, 4.5vw, 60px)",
+              fontSize: "clamp(30px, 4.5vw, 60px)",
               fontWeight: 300,
               letterSpacing: "-0.035em",
               lineHeight: 1.05,
@@ -112,8 +94,8 @@ function PricingPage() {
       </div>
 
       {/* ── PLANS ─────────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "56px 64px 80px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1 }}>
+      <div style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 40 : 56}px ${pad} ${isMobile ? 56 : 80}px` }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : isHandheld ? "repeat(2, 1fr)" : "repeat(4, 1fr)", gap: isMobile ? 14 : 1 }}>
           {plans.map((p) => (
             <PlanCard key={p.id} plan={p} onChoose={handleChoose} />
           ))}
@@ -136,11 +118,11 @@ function PricingPage() {
         style={{
           maxWidth: 680,
           margin: "0 auto",
-          padding: "0 64px 100px",
+          padding: `${isMobile ? 48 : 64}px ${pad} ${isMobile ? 64 : 100}px`,
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
-          paddingTop: 64,
         }}
       >
+
         <h2 style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: 28, fontWeight: 300, letterSpacing: "-0.025em", marginBottom: 40 }}>
           Questions
         </h2>
