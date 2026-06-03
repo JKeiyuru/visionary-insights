@@ -38,6 +38,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SPORTS, type SportSlug } from "@/components/scenes/sportConfig";
+import { useViewport } from "@/hooks/use-viewport";
+
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -74,6 +76,9 @@ function SportPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeChapter, setActiveChapter] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const { isMobile, isHandheld } = useViewport();
+  const pad = isMobile ? "20px" : isHandheld ? "32px" : "64px";
+
 
   useEffect(() => {
     function onScroll() {

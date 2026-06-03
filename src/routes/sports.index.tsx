@@ -21,6 +21,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { FloatingNav } from "@/components/FloatingNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SPORTS_LIST } from "@/components/scenes/sportConfig";
+import { useViewport } from "@/hooks/use-viewport";
+
 
 export const Route = createFileRoute("/sports/")({
   head: () => ({
@@ -33,19 +35,23 @@ export const Route = createFileRoute("/sports/")({
 });
 
 function SportsHub() {
+  const { isMobile, isHandheld, isWide } = useViewport();
+  const pad = isMobile ? "20px" : isHandheld ? "32px" : "64px";
+  const maxW = isWide ? 1400 : 1100;
+
   return (
     <div style={{ background: "#06060a", color: "#fff", minHeight: "100vh", fontFamily: '"Inter", sans-serif' }}>
       <FloatingNav />
 
       {/* ── HEADER ────────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "100px 64px 56px" }}>
+      <div style={{ maxWidth: maxW, margin: "0 auto", padding: `${isMobile ? 80 : 100}px ${pad} ${isMobile ? 40 : 56}px` }}>
         <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 14 }}>
           Sports universe
         </p>
         <h1
           style={{
             fontFamily: '"Space Grotesk", sans-serif',
-            fontSize: "clamp(36px, 5vw, 68px)",
+            fontSize: "clamp(34px, 5vw, 68px)",
             fontWeight: 300,
             letterSpacing: "-0.035em",
             lineHeight: 1.05,
@@ -56,7 +62,7 @@ function SportsHub() {
           <br />
           <span style={{ color: "rgba(255,255,255,0.35)" }}>One intelligence platform.</span>
         </h1>
-        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.4)", maxWidth: 480, lineHeight: 1.65 }}>
+        <p style={{ fontSize: isMobile ? 14 : 16, color: "rgba(255,255,255,0.4)", maxWidth: 480, lineHeight: 1.65 }}>
           Scroll inside any sport and the data unfolds around you — statistics, forecasts, and AI reasoning woven into a cinematic experience.
         </p>
       </div>
@@ -64,18 +70,19 @@ function SportsHub() {
       {/* ── SPORT GRID ────────────────────────────────────────────────── */}
       <div
         style={{
-          maxWidth: 1100,
+          maxWidth: maxW,
           margin: "0 auto",
-          padding: "0 64px 100px",
+          padding: `0 ${pad} ${isMobile ? 64 : 100}px`,
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 1,
+          gridTemplateColumns: isMobile ? "1fr" : isHandheld ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
+          gap: isMobile ? 12 : 1,
         }}
       >
         {SPORTS_LIST.map((s, i) => (
-          <SportCard key={s.slug} sport={s} large={i === 0} />
+          <SportCard key={s.slug} sport={s} large={!isHandheld && i === 0} />
         ))}
       </div>
+
 
       <SiteFooter />
     </div>
