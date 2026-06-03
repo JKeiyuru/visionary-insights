@@ -487,7 +487,10 @@ function Home() {
                 />
               </div>
             ))}
-          </div>
+            </div>
+          )}
+
+
 
           {/* ── SCROLL PROGRESS BAR ─────────────────────────────────────── */}
           <div
