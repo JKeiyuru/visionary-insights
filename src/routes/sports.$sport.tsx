@@ -131,13 +131,15 @@ function SportPage() {
           <div
             style={{
               position: "absolute",
-              bottom: 100,
+              bottom: isMobile ? 60 : 100,
               left: 0,
-              padding: "0 64px",
-              maxWidth: 680,
+              right: 0,
+              padding: `0 ${pad}`,
+              maxWidth: 720,
               pointerEvents: "none",
             }}
           >
+
             {/* Chapter label */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
               <div style={{ width: 6, height: 6, borderRadius: "50%", background: s.accent }} />
