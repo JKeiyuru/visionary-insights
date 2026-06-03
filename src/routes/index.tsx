@@ -233,6 +233,10 @@ function Home() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const chapter = CHAPTERS[activeChapter];
+  const vp = useViewport();
+  const { isMobile, isHandheld, isWide } = vp;
+  const pad = isMobile ? "20px" : isHandheld ? "32px" : "64px";
+  const maxW = isWide ? 1400 : 1100;
 
   useEffect(() => {
     function onScroll() {
@@ -247,6 +251,7 @@ function Home() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
 
   return (
     <div
