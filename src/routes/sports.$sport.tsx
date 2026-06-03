@@ -295,7 +295,7 @@ function SportPage() {
       <div
         style={{
           textAlign: "center",
-          padding: "120px 64px",
+          padding: `${isMobile ? 80 : 120}px ${pad}`,
           borderTop: "0.5px solid rgba(255,255,255,0.06)",
           position: "relative",
           overflow: "hidden",
