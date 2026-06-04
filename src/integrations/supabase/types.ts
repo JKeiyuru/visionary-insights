@@ -333,7 +333,6 @@ export type Database = {
         Row: {
           accuracy: number | null
           avatar_url: string | null
-          correct_count: number | null
           created_at: string | null
           display_name: string | null
           forecasts_count: number | null
@@ -344,7 +343,6 @@ export type Database = {
         Insert: {
           accuracy?: number | null
           avatar_url?: string | null
-          correct_count?: number | null
           created_at?: string | null
           display_name?: string | null
           forecasts_count?: number | null
@@ -355,7 +353,6 @@ export type Database = {
         Update: {
           accuracy?: number | null
           avatar_url?: string | null
-          correct_count?: number | null
           created_at?: string | null
           display_name?: string | null
           forecasts_count?: number | null
