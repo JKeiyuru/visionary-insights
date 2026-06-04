@@ -329,7 +329,42 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          accuracy: number | null
+          avatar_url: string | null
+          correct_count: number | null
+          created_at: string | null
+          display_name: string | null
+          forecasts_count: number | null
+          id: string | null
+          tier: string | null
+          username: string | null
+        }
+        Insert: {
+          accuracy?: number | null
+          avatar_url?: string | null
+          correct_count?: number | null
+          created_at?: string | null
+          display_name?: string | null
+          forecasts_count?: number | null
+          id?: string | null
+          tier?: string | null
+          username?: string | null
+        }
+        Update: {
+          accuracy?: number | null
+          avatar_url?: string | null
+          correct_count?: number | null
+          created_at?: string | null
+          display_name?: string | null
+          forecasts_count?: number | null
+          id?: string | null
+          tier?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
