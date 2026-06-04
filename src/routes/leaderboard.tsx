@@ -36,7 +36,7 @@ function LeaderboardPage() {
 
   useEffect(() => {
     supabase
-      .from("profiles")
+      .from("profiles_public" as never)
       .select("id, display_name, tier, accuracy, forecasts_count")
       .order("accuracy", { ascending: false })
       .limit(50)
